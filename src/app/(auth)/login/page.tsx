@@ -19,6 +19,7 @@ import { useState, useTransition } from 'react';
 import { useAuth } from '@/context/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Correo inválido' }),
@@ -129,6 +130,15 @@ export default function LoginPage() {
                     </div>
                   </FormControl>
                   <FormMessage />
+
+                  <div className='mt-2 text-right'>
+                    <Link
+                      href='/forgot-password'
+                      className='text-sm text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm'
+                      aria-label='Ir a la página de restablecer contraseña'>
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </div>
                 </FormItem>
               )}
             />

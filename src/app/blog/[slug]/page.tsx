@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { getPostBySlug } from '@/actions/blog/posts';
+import { CommentsSection } from '@/components/sections/CommentsSection';
 
 interface BlogPost {
   id: string;
@@ -62,63 +63,67 @@ export default function BlogPostPage() {
   if (!post) return notFound();
 
   return (
-    <article
-      className='max-w-3xl mx-auto px-4 py-16 mt-8 text-foreground'
-      aria-labelledby='blog-post-title'>
-      <Link
-        href='/blog'
-        className='flex items-center mb-8 text-sm font-medium text-muted-foreground hover:text-primary transition-colors'
-        aria-label='Volver al blog'>
-        <ArrowLeft className='w-4 h-4 mr-2' />
-        Volver al blog
-      </Link>
+    <>
+      <article
+        className='max-w-3xl mx-auto px-4 py-16 mt-8 text-foreground'
+        aria-labelledby='blog-post-title'>
+        <Link
+          href='/blog'
+          className='flex items-center mb-8 text-sm font-medium text-muted-foreground hover:text-primary transition-colors'
+          aria-label='Volver al blog'>
+          <ArrowLeft className='w-4 h-4 mr-2' />
+          Volver al blog
+        </Link>
 
-      <header className='mb-10'>
-        <h1
-          id='blog-post-title'
-          className='text-4xl font-bold leading-tight tracking-tight mb-3'>
-          {post.title}
-        </h1>
+        <header className='mb-10'>
+          <h1
+            id='blog-post-title'
+            className='text-4xl font-bold leading-tight tracking-tight mb-3'>
+            {post.title}
+          </h1>
 
-        <div className='flex flex-wrap items-center justify-between mb-4'>
-          <p className='text-muted-foreground text-sm'>
-            Publicado el{' '}
-            {new Date(post.created_at).toLocaleDateString('es-MX', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
+          <div className='flex flex-wrap items-center justify-between mb-4'>
+            <p className='text-muted-foreground text-sm'>
+              Publicado el{' '}
+              {new Date(post.created_at).toLocaleDateString('es-MX', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
 
-          {post.category && (
-            <Badge className='bg-primary text-white px-3 py-1 rounded-full text-xs font-medium'>
-              {post.category}
-            </Badge>
-          )}
-        </div>
-
-        {post.image_url && (
-          <div className='relative w-full h-[300px] md:h-[420px] rounded-xl overflow-hidden'>
-            <Image
-              src={post.image_url}
-              alt={`Imagen destacada del artículo: ${post.title}`}
-              fill
-              className='object-cover w-full h-full'
-              priority
-              sizes='(max-width: 768px) 100vw, 768px'
-            />
+            {post.category && (
+              <Badge className='bg-primary text-white px-3 py-1 rounded-full text-xs font-medium'>
+                {post.category}
+              </Badge>
+            )}
           </div>
-        )}
-      </header>
 
-      <Separator className='my-8' />
+          {post.image_url && (
+            <div className='relative w-full h-[300px] md:h-[420px] rounded-xl overflow-hidden'>
+              <Image
+                src={post.image_url}
+                alt={`Imagen destacada del artículo: ${post.title}`}
+                fill
+                className='object-cover w-full h-full'
+                priority
+                sizes='(max-width: 768px) 100vw, 768px'
+              />
+            </div>
+          )}
+        </header>
 
-      <section aria-label='Contenido del artículo'>
-        <div
-          dangerouslySetInnerHTML={{ __html: post.content }}
-          className='prose prose-neutral dark:prose-invert max-w-none [&_p+p]:mt-6 leading-relaxed tracking-wider'
-        />
-      </section>
-    </article>
+        <Separator className='my-8' />
+
+        <section aria-label='Contenido del artículo'>
+          <div
+            dangerouslySetInnerHTML={{ __html: post.content }}
+            className='prose prose-neutral dark:prose-invert max-w-none [&_p+p]:mt-6 leading-relaxed tracking-wider'
+          />
+        </section>
+
+        <CommentsSection postId={post.id} />
+      </article>
+    </>
   );
 }

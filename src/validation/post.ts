@@ -15,3 +15,12 @@ export const postSchema = z.object({
 });
 
 export type PostSchema = z.infer<typeof postSchema>;
+
+export const CommentSchema = z.object({
+  name: z.string().min(2, { message: 'El nombre es obligatorio' }),
+  content: z
+    .string()
+    .min(5, { message: 'El comentario debe tener al menos 5 caracteres' }),
+});
+
+export type CommentSchema = z.infer<typeof CommentSchema>;

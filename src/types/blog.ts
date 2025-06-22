@@ -12,3 +12,11 @@ export interface Post {
 }
 
 export type PostUpdate = Partial<Omit<Post, 'id' | 'created_at' | 'slug'>>;
+
+export interface CommentType {
+  readonly id: string;
+  post_id: string;
+  name: string;
+  content: string;
+  readonly created_at: string;
+}

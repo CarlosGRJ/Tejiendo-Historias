@@ -21,7 +21,6 @@ export default function EditPostPage({
 }) {
   const router = useRouter();
   const { slug } = use(params);
-  console.log('slug', slug);
 
   const [post, setPost] = useState<Post | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +31,6 @@ export default function EditPostPage({
     const fetchPost = async () => {
       try {
         const data = await getPostBySlug(slug);
-        console.log('data', data);
         if (!data) throw new Error('Post no encontrado');
         setPost(data);
       } catch (err) {
@@ -91,7 +89,6 @@ export default function EditPostPage({
         image_url: imageUrl,
       };
 
-      console.log('Was updated in sql');
       await updatePost(post.id, updatedData);
       toast.success('Post actualizado con éxito');
       router.push('/blog');
@@ -122,7 +119,11 @@ export default function EditPostPage({
       </header>
 
       {!isLoading && post ? (
-        <PostForm defaultValues={post} onSubmitAction={handleUpdatePost} isEdit />
+        <PostForm
+          defaultValues={post}
+          onSubmitAction={handleUpdatePost}
+          isEdit
+        />
       ) : (
         <p className='text-center text-muted-foreground'>Cargando...</p>
       )}
