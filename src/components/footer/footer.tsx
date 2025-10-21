@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, Phone, Facebook, Instagram } from 'lucide-react';
+import { Mail, Phone, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import Link from 'next/link';
 
@@ -83,6 +83,15 @@ export default function Footer() {
                   className='hover:text-primary transition-colors'
                   aria-label='Instagram'>
                   <Instagram className='w-5 h-5' />
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href='https://linkedin.com'
+                  target='_blank'
+                  className='hover:text-primary transition-colors'
+                  aria-label='LinkedIn'>
+                  <Linkedin className='w-5 h-5' />
                 </Link>
               </li>
             </ul>

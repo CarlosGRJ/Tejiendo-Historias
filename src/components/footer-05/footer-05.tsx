@@ -1,12 +1,8 @@
 'use client';
 
 import { Separator } from '@/components/ui/separator';
-import {
-  DribbbleIcon,
-  GithubIcon,
-  TwitchIcon,
-  TwitterIcon,
-} from 'lucide-react';
+import { Mail, Instagram, Linkedin } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import Link from 'next/link';
 import { Logo } from '../navbar/logo';
 
@@ -16,6 +12,9 @@ const footerLinks = [
   { title: 'Sobre mí', href: '/about-me' },
   { title: 'Contacto', href: '/#contact' },
 ];
+
+const email = 'tejiendohistorias.aag@gmail.com';
+const whatsappNumber = '525561800189';
 
 export default function Footer() {
   return (
@@ -61,33 +60,29 @@ export default function Footer() {
 
           {/* Socials */}
           <div className='flex gap-4' aria-label='Redes sociales'>
-            <Link
-              href='https://twitter.com'
+            <a
+              href={`https://wa.me/${whatsappNumber}`}
               target='_blank'
               rel='noopener noreferrer'
-              aria-label='Twitter'>
-              <TwitterIcon className='w-5 h-5 hover:text-primary' />
+              aria-label='WhatsApp'>
+              <FaWhatsapp className='w-5 h-5 hover:text-primary transition-colors' />
+            </a>
+            <a href={`mailto:${email}`} aria-label='Email'>
+              <Mail className='w-5 h-5 hover:text-primary transition-colors' />
+            </a>
+            <Link
+              href='https://www.instagram.com/tejiendohistorias22?igsh=MTRsNXNiN2s0eG9zMA%3D%3D&utm_source=qr'
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label='Instagram'>
+              <Instagram className='w-5 h-5 hover:text-primary transition-colors' />
             </Link>
             <Link
-              href='https://dribbble.com'
+              href='http://linkedin.com/in/andrea-armenta-garcía-488629233'
               target='_blank'
               rel='noopener noreferrer'
-              aria-label='Dribbble'>
-              <DribbbleIcon className='w-5 h-5 hover:text-primary' />
-            </Link>
-            <Link
-              href='https://twitch.tv'
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label='Twitch'>
-              <TwitchIcon className='w-5 h-5 hover:text-primary' />
-            </Link>
-            <Link
-              href='https://github.com'
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label='GitHub'>
-              <GithubIcon className='w-5 h-5 hover:text-primary' />
+              aria-label='LinkedIn'>
+              <Linkedin className='w-5 h-5 hover:text-primary transition-colors' />
             </Link>
           </div>
         </div>

@@ -24,7 +24,7 @@ export default function AboutMeHeroSection() {
         </p>
 
         <Button asChild size='lg' className='bg-primary text-white shadow-md'>
-          <a href='#profile'>Ver mi trayectoria</a>
+          <a href='#about'>Ver mi trayectoria</a>
         </Button>
       </div>
     </section>

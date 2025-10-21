@@ -23,7 +23,7 @@ const NavbarPage = () => {
 
   return (
     <nav
-      className='fixed top-0 z-50 w-full h-16 bg-background border-b opacity-90'
+      className='fixed top-0 z-50 w-full h-24 bg-background border-b opacity-90'
       role='navigation'
       aria-label='Barra de navegación principal'>
       <div className='h-full flex items-center justify-between max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -54,12 +54,18 @@ const NavbarPage = () => {
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent
                 align='end'
                 aria-label='Opciones del usuario'>
                 <DropdownMenuItem asChild>
                   <Link href='/admin/posts/new'>Nuevo Post</Link>
                 </DropdownMenuItem>
+                
+                <DropdownMenuItem>
+                  <Link href='/admin/appointments-dashboard'>Citas</Link>
+                </DropdownMenuItem>
+
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className='cursor-pointer'

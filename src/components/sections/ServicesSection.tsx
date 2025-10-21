@@ -17,111 +17,83 @@ import {
 } from '@/components/ui/dialog';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
-
-interface Service {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  fullDescription: string;
-}
-
-const services: Service[] = [
-  {
-    id: 1,
-    title: 'Terapia Individual',
-    description: 'Atención personalizada enfocada en tu bienestar emocional.',
-    fullDescription:
-      'La terapia individual te permite trabajar tus emociones, pensamientos y comportamientos de forma personalizada, con herramientas adaptadas a tus necesidades y ritmo de avance.',
-    image:
-      'https://cdn.pixabay.com/photo/2020/04/27/21/01/mental-health-5104378_1280.jpg',
-  },
-  {
-    id: 2,
-    title: 'Terapia de Pareja',
-    description:
-      'Fortalece la comunicación y vínculos afectivos con tu pareja.',
-    fullDescription:
-      'Mejoramos el diálogo, la empatía y las herramientas para afrontar los desafíos de la vida en pareja, generando acuerdos sanos para ambos.',
-    image:
-      'https://cdn.pixabay.com/photo/2020/10/01/19/16/couple-5618697_1280.jpg',
-  },
-  {
-    id: 3,
-    title: 'Orientación Familiar',
-    description: 'Mejora la dinámica familiar y la convivencia en casa.',
-    fullDescription:
-      'Trabajamos la comunicación familiar, el establecimiento de límites, la crianza y la resolución de conflictos para fortalecer los lazos familiares.',
-    image:
-      'https://cdn.pixabay.com/photo/2016/01/19/15/05/family-1149640_1280.jpg',
-  },
-  {
-    id: 4,
-    title: 'Consulta Online',
-    description: 'Sesiones cómodas desde cualquier lugar, sin perder calidad.',
-    fullDescription:
-      'Sesiones por videollamada que mantienen la misma calidez, seguridad y profesionalismo desde cualquier parte del mundo.',
-    image:
-      'https://cdn.pixabay.com/photo/2021/09/01/13/14/online-consultation-6590711_1280.jpg',
-  },
-];
+import { SERVICES } from '@/constants';
 
 export default function ServicesSection() {
   return (
-    <section className='py-20' id='services'>
+    <section className='mb-14' id='services'>
       <h2 className='text-3xl md:text-4xl font-bold text-center text-[#F4A896] mb-16'>
         Servicios
       </h2>
 
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10'>
-        {services.map((service) => (
+        {SERVICES.map((service) => (
           <Dialog key={service.id}>
             <DialogTrigger asChild>
-              <Card className='pt-0 overflow-hidden rounded-3xl cursor-pointer transition-transform duration-300 hover:scale-105'>
-                <div className='aspect-[16/9] w-full'>
+              <Card className='group h-full flex flex-col pt-0 overflow-hidden rounded-2xl shadow-md transition-transform duration-300 hover:scale-[1.01] cursor-pointer'>
+                <div className='w-full'>
                   <Image
-                    src='https://i.pinimg.com/736x/d0/44/78/d04478b7cd581a1233d7f71a27f62fda.jpg'
+                    src={service.image}
                     alt={service.title}
-                    width={200}
-                    height={200}
-                    className='h-full w-full object-cover object-center'
+                    width={400}
+                    height={300}
+                    className='object-cover object-center max-h-48'
                   />
                 </div>
 
-                <CardHeader className='text-lg font-semibold'>
-                  <h3 className='text-lg font-semibold md:text-xl'>
+                <CardHeader>
+                  <h3 className='text-lg font-semibold md:text-xl mb-1 text-balance'>
                     {service.title}
                   </h3>
+                  <div className='text-lg font-bold text-primary tracking-tight'>
+                    {service.price}
+                  </div>
                 </CardHeader>
 
-                <CardContent>
-                  <p className='text-muted-foreground'>{service.description}</p>
+                <CardContent className='text-muted-foreground'>
+                  <p>{service.description}</p>
                 </CardContent>
 
-                <CardFooter>
-                  <span className='flex items-center text-foreground hover:underline'>
+                <CardFooter className='mt-auto'>
+                  <span className='flex items-center text-sm text-primary font-medium group-hover:underline'>
                     Ver más <ArrowRight className='ml-2 size-4' />
                   </span>
                 </CardFooter>
               </Card>
             </DialogTrigger>
 
-            <DialogContent className='max-w-lg'>
+            <DialogContent className='max-w-xl sm:max-w-xl max-h-[90vh] overflow-y-auto'>
               <DialogHeader>
-                <DialogTitle className='text-primary font-bold'>{service.title}</DialogTitle>
-                <DialogDescription>{service.fullDescription}</DialogDescription>
+                <DialogTitle className='text-primary font-bold text-xl mb-2'>
+                  {service.title}
+                </DialogTitle>
+
+                <div className='text-lg font-semibold text-primary bg-[#F4A896]/10 border border-[#F4A896] px-4 py-2 rounded-xl inline-block mb-4'>
+                  {service.price}
+                </div>
+
+                <DialogDescription className='text-muted-foreground space-y-6'>
+                  {service.sections ? (
+                    service.sections.map((section, idx) => (
+                      <article key={idx}>
+                        <h4 className='text-base font-semibold text-foreground mb-1'>
+                          {section.title}
+                        </h4>
+                        <p className='text-sm leading-relaxed whitespace-pre-line text-muted-foreground'>
+                          {section.content}
+                        </p>
+                      </article>
+                    ))
+                  ) : (
+                    <p className='whitespace-pre-line leading-relaxed text-sm'>
+                      {service.fullDescription}
+                    </p>
+                  )}
+                </DialogDescription>
               </DialogHeader>
 
-              <Image
-                src='https://i.pinimg.com/736x/d0/44/78/d04478b7cd581a1233d7f71a27f62fda.jpg'
-                alt={service.title}
-                width={600}
-                height={400}
-                className='rounded-xl object-cover mt-4'
-              />
-
-              <div className='mt-6 flex justify-center'>
-                <a href='#contact' className='w-full'>
+              <div className='mt-6'>
+                <a href='#contact'>
                   <Button className='w-full bg-primary text-white shadow-md'>
                     Agendar Consulta
                   </Button>

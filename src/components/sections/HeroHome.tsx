@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function HeroHome() {
   return (
@@ -39,7 +40,7 @@ export default function HeroHome() {
               asChild
               size='lg'
               className='bg-primary text-white shadow-lg px-8 py-5'>
-              <a href='#agendar'>Agendar Cita</a>
+              <Link href='/appointment'>Agendar Cita</Link>
             </Button>
             <Button
               asChild

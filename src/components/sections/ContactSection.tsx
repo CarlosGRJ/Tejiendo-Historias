@@ -25,13 +25,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-
-const services = [
-  'Terapia Individual',
-  'Terapia de Pareja',
-  'Orientación Familiar',
-  'Consulta Online',
-];
+import { SERVICES } from '@/constants';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
@@ -176,9 +170,9 @@ export default function ContactSection() {
                               <SelectValue placeholder='Selecciona un servicio' />
                             </SelectTrigger>
                             <SelectContent>
-                              {services.map((service, index) => (
-                                <SelectItem key={index} value={service}>
-                                  {service}
+                              {SERVICES.map((service, index) => (
+                                <SelectItem key={index} value={service.title}>
+                                  {service.title}
                                 </SelectItem>
                               ))}
                             </SelectContent>
