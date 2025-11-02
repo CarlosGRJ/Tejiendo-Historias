@@ -6,6 +6,7 @@ import {
   Container,
   Tailwind,
   Link,
+  Img,
 } from '@react-email/components';
 
 type Props = {
@@ -32,6 +33,16 @@ export default function NewAppointmentNotificationEmail({
       <Tailwind>
         <Section className='bg-[#faf9f6] py-10 px-4'>
           <Container className='bg-white rounded-xl shadow-md mx-auto max-w-md px-6 py-8 border border-[#e5e5e5]'>
+            <Section className='text-center mb-4'>
+              <Img
+                src='https://dmrlsifttwszmipgmtun.supabase.co/storage/v1/object/public/images/logo/logo.webp'
+                alt='Logo Tejiendo Historias'
+                width={100}
+                height={100}
+                className='mx-auto'
+              />
+            </Section>
+
             <Heading className='text-[#c95b9f] text-2xl font-bold mb-4 text-center'>
               📥 Nueva cita agendada
             </Heading>

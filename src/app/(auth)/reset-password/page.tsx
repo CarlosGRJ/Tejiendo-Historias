@@ -2,9 +2,9 @@ import { ResetPasswordForm } from '@/components/forms/ResetPasswordForm';
 
 export default function ResetPasswordPage() {
   return (
-    <main className='min-h-screen flex items-center justify-center px-4 py-12 bg-background text-foreground'>
+    <main className='flex items-start justify-center px-4 py-8 md:py-16 bg-background text-foreground'>
       <section
-        className='w-full max-w-md space-y-8'
+        className='w-full max-w-md space-y-4 sm:space-y-6 md:space-y-8'
         aria-labelledby='reset-password-heading'>
         <header className='text-center space-y-2'>
           <h1

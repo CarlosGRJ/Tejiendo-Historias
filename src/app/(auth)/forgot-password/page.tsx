@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <main className='min-h-screen text-foreground max-w-xl mx-auto px-4 py-56'>
-      <header className='mb-8 text-center'>
+    <main className='text-foreground max-w-xl mx-auto px-4 py-8 md:py-16'>
+      <header className='mb-6 md:mb-8 text-center'>
         <h1 className='text-3xl font-bold text-primary mb-2'>
           Restablecer contraseña
         </h1>

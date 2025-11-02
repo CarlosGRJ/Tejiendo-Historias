@@ -163,11 +163,11 @@ html {
 }
 
 .prose ul {
-  @apply list-disc list-inside mb-4 pl-5;
+  @apply list-disc list-outside pl-5 mb-4;
 }
 
 .prose ol {
-  @apply list-decimal list-inside mb-4 pl-5;
+  @apply list-decimal list-outside pl-5 mb-4;
 }
 
 .prose blockquote {

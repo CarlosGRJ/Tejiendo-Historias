@@ -6,12 +6,12 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function generateGoogleCalendarLink({
-  name,
+  email,
   service,
   date,
   time,
 }: {
-  name: string;
+  email: string;
   service: string;
   date: string;
   time: string;
@@ -27,8 +27,12 @@ export function generateGoogleCalendarLink({
   const url = new URL('https://www.google.com/calendar/render');
   url.searchParams.set('action', 'TEMPLATE');
   url.searchParams.set('text', `Cita: ${service}`);
-  url.searchParams.set('details', `Cita agendada con ${name}. Te esperamos 😊`);
+  url.searchParams.set(
+    'details',
+    'Gracias por agendar tu cita. Será un espacio de escucha y acompañamiento. Nos vemos pronto.',
+  );
   url.searchParams.set('dates', `${startStr}/${endStr}`);
+  url.searchParams.set('add', email);
 
   return url.toString();
 }

@@ -58,9 +58,9 @@ export default function LoginPage() {
     });
   };
   return (
-    <main className='min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-12'>
+    <main className='bg-background text-foreground flex items-start justify-center px-4 py-8 md:py-16'>
       <section
-        className='w-full max-w-md space-y-8'
+        className='w-full max-w-md space-y-4 sm:space-y-6 md:space-y-8'
         aria-labelledby='login-heading'>
         <header className='text-center space-y-2'>
           <h1 id='login-heading' className='text-3xl font-bold text-primary'>

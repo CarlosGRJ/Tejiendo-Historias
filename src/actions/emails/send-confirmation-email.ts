@@ -26,7 +26,6 @@ export async function sendConfirmationEmail(
         date: formattedDate,
         time: data.time,
         service: data.service,
-        calendarUrl,
       }),
     );
 
@@ -46,23 +45,17 @@ export async function sendConfirmationEmail(
     await resend.emails.send({
       //   from: 'Tejiendo Historias <no-reply@tejiendohistorias.com>',
       //   to: data.email,
-      from: 'Acme <onboarding@resend.dev>',
-      to: ['delivered@resend.dev'],
+      from: 'Carlos Rojas <hello@carlosrojasj.dev>',
+      to: ['carlosgrjpruebas@gmail.com'],
       subject: 'Tu cita ha sido agendada – Tejiendo Historias',
       html: confirmationHtml,
-      attachments: [
-        {
-          filename: 'cita.ics',
-          content: icsBuffer.toString('base64'),
-        },
-      ],
     });
 
     await resend.emails.send({
       //   from: 'Tejiendo Historias <no-reply@tejiendohistorias.com>',
       //   to: process.env.AUTH_EMAIL!,
-      from: 'Acme <onboarding@resend.dev>',
-      to: ['delivered@resend.dev'],
+      from: 'Carlos Rojas <hello@carlosrojasj.dev>',
+      to: ['carlosgrj2013@gmail.com'],
       subject: 'Nueva cita agendada',
       html: notificationHtml,
       attachments: [

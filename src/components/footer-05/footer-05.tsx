@@ -23,7 +23,7 @@ export default function Footer() {
         {/* Top */}
         <div className='py-10 flex flex-col items-center text-sm'>
           <div className='mb-4'>
-            <Logo />
+            <Logo width='150' height='150' />
           </div>
 
           <nav aria-label='Footer main navigation'>

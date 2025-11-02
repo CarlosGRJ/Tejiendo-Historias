@@ -14,7 +14,7 @@ export default function AboutMeSection() {
             alt='Andrea Armenta García - Psicóloga con enfoque psicoanalítico'
             width={600}
             height={600}
-            className='object-cover object-center rounded-3xl transition-transform duration-700 group-hover:scale-105'
+            className='w-full object-cover object-center rounded-3xl transition-transform duration-700 group-hover:scale-105'
             priority
           />
           <div className='absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-all duration-700 rounded-3xl'></div>

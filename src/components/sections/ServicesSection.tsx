@@ -18,6 +18,7 @@ import {
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { SERVICES } from '@/constants';
+import Link from 'next/link';
 
 export default function ServicesSection() {
   return (
@@ -31,13 +32,13 @@ export default function ServicesSection() {
           <Dialog key={service.id}>
             <DialogTrigger asChild>
               <Card className='group h-full flex flex-col pt-0 overflow-hidden rounded-2xl shadow-md transition-transform duration-300 hover:scale-[1.01] cursor-pointer'>
-                <div className='w-full'>
+                <div className='relative w-full aspect-[4/3]'>
                   <Image
                     src={service.image}
                     alt={service.title}
-                    width={400}
-                    height={300}
-                    className='object-cover object-center max-h-48'
+                    fill
+                    className='object-cover object-center rounded-t-2xl'
+                    sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw'
                   />
                 </div>
 
@@ -93,11 +94,12 @@ export default function ServicesSection() {
               </DialogHeader>
 
               <div className='mt-6'>
-                <a href='#contact'>
-                  <Button className='w-full bg-primary text-white shadow-md'>
-                    Agendar Consulta
-                  </Button>
-                </a>
+                <Button
+                  asChild
+                  size='lg'
+                  className='w-full bg-primary text-white shadow-md'>
+                  <Link href='/appointment'>Agendar Cita</Link>
+                </Button>
               </div>
             </DialogContent>
           </Dialog>

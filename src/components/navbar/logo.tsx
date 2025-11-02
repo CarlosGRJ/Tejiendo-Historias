@@ -3,7 +3,7 @@ interface LogoProps {
   height?: string;
 }
 
-export const Logo = ({ width = "80", height = "90" }: LogoProps) => (
+export const Logo = ({ width = "80", height = "80" }: LogoProps) => (
   <svg
     xmlns='http://www.w3.org/2000/svg'
     xmlnsXlink='http://www.w3.org/1999/xlink'
@@ -17,19 +17,19 @@ export const Logo = ({ width = "80", height = "90" }: LogoProps) => (
       <filter x='0%' y='0%' width='100%' height='100%' id='df9dc130e3'>
         <feColorMatrix
           values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'
-          color-interpolation-filters='sRGB'
+          colorInterpolationFilters='sRGB'
         />
       </filter>
       <filter x='0%' y='0%' width='100%' height='100%' id='b5177a1395'>
         <feColorMatrix
           values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.2126 0.7152 0.0722 0 0'
-          color-interpolation-filters='sRGB'
+          colorInterpolationFilters='sRGB'
         />
       </filter>
       <clipPath id='1aa46e5bdd'>
         <path
           d='M 0 0.429688 L 697.5 0.429688 L 697.5 797.570312 L 0 797.570312 Z M 0 0.429688 '
-          clip-rule='nonzero'
+          clipRule='nonzero'
         />
       </clipPath>
       <mask id='4090854268'>
@@ -49,7 +49,7 @@ export const Logo = ({ width = "80", height = "90" }: LogoProps) => (
         </g>
       </mask>
     </defs>
-    <g clip-path='url(#1aa46e5bdd)'>
+    <g clipPath='url(#1aa46e5bdd)'>
       <g mask='url(#4090854268)'>
         <g transform='matrix(0.749195, 0, 0, 0.749195, 0, 0.428128)'>
           <image

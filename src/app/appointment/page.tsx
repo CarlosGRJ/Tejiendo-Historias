@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function AppointmentPage() {
   return (
     <main
-      className='min-h-[80vh] max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 mt-10'
+      className='min-h-[80vh] max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 mt-10'
       aria-labelledby='appointment-page-title'>
       <AppointmentSectionClient />
     </main>

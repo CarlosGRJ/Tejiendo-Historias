@@ -13,21 +13,36 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/context/AuthProvider';
+import { useEffect, useState } from 'react';
 
 const NavbarPage = () => {
+  const [isSticky, setIsSticky] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsSticky(window.scrollY > 50);
+    };
+
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <nav
-      className='fixed top-0 z-50 w-full h-24 bg-background border-b opacity-90'
+      className={`px-26 h-20 bg-background border-b ${isSticky ? 'sticky' : ''}`}
       role='navigation'
       aria-label='Barra de navegación principal'>
-      <div className='h-full flex items-center justify-between max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <Logo />
+      <div className='h-full flex items-center justify-between max-w-screen-2xl mx-auto px-4'>
+        <div className='flex items-center gap-10'>
+          <Logo width='65' />
+        </div>
 
         {/* Menú de navegación principal en desktop */}
         <NavMenu className='hidden md:block' />
@@ -43,10 +58,10 @@ const NavbarPage = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar
-                  className='cursor-pointer'
+                  className='cursor-pointer w-12 h-12'
                   aria-label='Menú del usuario administrador'>
                   <AvatarImage
-                    src='/avatar-placeholder.png'
+                    src='/images/avatar.webp'
                     alt='Avatar del usuario'
                   />
                   <AvatarFallback>
@@ -57,12 +72,12 @@ const NavbarPage = () => {
 
               <DropdownMenuContent
                 align='end'
-                aria-label='Opciones del usuario'>
-                <DropdownMenuItem asChild>
+                aria-labelledby='admin-menu-label'>
+                <DropdownMenuItem id='admin-menu-label' asChild>
                   <Link href='/admin/posts/new'>Nuevo Post</Link>
                 </DropdownMenuItem>
-                
-                <DropdownMenuItem>
+
+                <DropdownMenuItem asChild>
                   <Link href='/admin/appointments-dashboard'>Citas</Link>
                 </DropdownMenuItem>
 

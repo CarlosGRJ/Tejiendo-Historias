@@ -55,8 +55,6 @@ export function AppointmentForm({
   const [availableSlots, setAvailableSlots] = useState<
     (typeof TIME_SLOTS)[number][]
   >([]);
-  const [calendarUrl, setCalendarUrl] = useState<string | null>(null);
-  const [icsUrl, setICSUrl] = useState<string | null>(null);
 
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(appointmentSchema),
@@ -93,7 +91,7 @@ export function AppointmentForm({
       await createAppointment(data);
 
       const calendarLink = generateGoogleCalendarLink({
-        name: data.name,
+        email: data.email,
         service: data.service,
         date: data.date.toISOString().split('T')[0],
         time: data.time,
@@ -112,11 +110,6 @@ export function AppointmentForm({
       });
       await sendConfirmationEmail(data, calendarLink, icsContent);
 
-      const blob = new Blob([icsContent], { type: 'text/calendar' });
-      const url = URL.createObjectURL(blob);
-
-      setCalendarUrl(calendarLink);
-      setICSUrl(url);
       setSuccessData(data);
       onSuccess?.(data);
       toast.success('Cita agendada, te contactaremos por correo.');
@@ -149,26 +142,10 @@ export function AppointmentForm({
           </p>
         )}
 
-        <div className='flex flex-col items-center gap-2 mt-4'>
-          {calendarUrl && (
-            <a
-              href={calendarUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-blue-600 underline'>
-              📅 Agregar al Google Calendar
-            </a>
-          )}
-
-          {icsUrl && (
-            <a
-              href={icsUrl}
-              download='cita-tejiendo-historias.ics'
-              className='text-green-600 underline'>
-              📄 Descargar archivo .ics
-            </a>
-          )}
-        </div>
+        <p className='text-muted-foreground'>
+          Muy pronto Andrea se pondrá en contacto contigo para compartir la
+          invitación a tu sesión. ¡Gracias por tu confianza!
+        </p>
       </div>
     );
   }
@@ -351,29 +328,6 @@ export function AppointmentForm({
           className='w-full'>
           {isSubmitting ? 'Agendando...' : 'Agendar cita'}
         </Button>
-
-        {calendarUrl && (
-          <div className='text-center mt-4'>
-            <a
-              href={calendarUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='underline text-blue-600 hover:text-blue-800'>
-              📅 Agregar esta cita a tu Google Calendar
-            </a>
-          </div>
-        )}
-
-        {icsUrl && (
-          <div className='text-center mt-2'>
-            <a
-              href={icsUrl}
-              download='cita-tejiendo-historias.ics'
-              className='underline text-green-600 hover:text-green-800'>
-              📄 Descargar evento como archivo .ics
-            </a>
-          </div>
-        )}
       </form>
     </Form>
   );

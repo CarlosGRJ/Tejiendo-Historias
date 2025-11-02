@@ -26,6 +26,8 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SERVICES } from '@/constants';
+import { useState } from 'react';
+import { sendContactEmail } from '@/actions/emails/send-contact-email';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
@@ -37,9 +39,12 @@ const contactSchema = z.object({
 type ContactFormData = z.infer<typeof contactSchema>;
 
 export default function ContactSection() {
-  const email = 'andrea@tejiendohistorias.com';
+  const email = 'tejiendohistorias.aag@gmail.com';
   const phone = '+525561800189';
   const whatsappNumber = '525561800189';
+
+  const [cooldown, setCooldown] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
@@ -56,8 +61,20 @@ export default function ContactSection() {
     toast.success('Correo copiado al portapapeles');
   };
 
-  const onSubmit = (data: ContactFormData) => {
-    console.log(data);
+  const onSubmit = async (data: ContactFormData) => {
+    setLoading(true);
+    try {
+      await sendContactEmail(data);
+      form.reset();
+      toast.success('¡Mensaje enviado con éxito!');
+      setCooldown(true);
+      setTimeout(() => setCooldown(false), 30000);
+    } catch (error) {
+      console.error(error);
+      toast.error('Ocurrió un error al enviar el mensaje.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,7 +87,6 @@ export default function ContactSection() {
         </h2>
 
         <div className='grid md:grid-cols-2 gap-8'>
-          {/* Contact Info */}
           <div className='space-y-6'>
             <div>
               <h3 className='text-xl font-semibold mb-2'>Teléfono</h3>
@@ -114,7 +130,6 @@ export default function ContactSection() {
             </div>
           </div>
 
-          {/* Contact Form */}
           <Card className='shadow-lg'>
             <CardHeader>
               <CardTitle>Escríbeme</CardTitle>
@@ -129,9 +144,13 @@ export default function ContactSection() {
                     name='name'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre</FormLabel>
+                        <FormLabel htmlFor='contact-name'>Nombre</FormLabel>
                         <FormControl>
-                          <Input placeholder='Nombre completo' {...field} />
+                          <Input
+                            id='contact-name'
+                            placeholder='Nombre completo'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -143,10 +162,13 @@ export default function ContactSection() {
                     name='email'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Correo electrónico</FormLabel>
+                        <FormLabel htmlFor='contact-email'>
+                          Correo electrónico
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type='email'
+                            id='contact-email'
                             placeholder='correo@ejemplo.com'
                             {...field}
                           />
@@ -161,12 +183,12 @@ export default function ContactSection() {
                     name='service'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Servicio</FormLabel>
+                        <FormLabel htmlFor='service'>Servicio</FormLabel>
                         <FormControl>
                           <Select
                             onValueChange={field.onChange}
                             value={field.value}>
-                            <SelectTrigger className='w-full'>
+                            <SelectTrigger id='service' className='w-full'>
                               <SelectValue placeholder='Selecciona un servicio' />
                             </SelectTrigger>
                             <SelectContent>
@@ -188,9 +210,12 @@ export default function ContactSection() {
                     name='message'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Motivo de consulta</FormLabel>
+                        <FormLabel htmlFor='contact-message'>
+                          Motivo de consulta
+                        </FormLabel>
                         <FormControl>
                           <Textarea
+                            id='contact-message'
                             rows={4}
                             placeholder='Cuéntame brevemente tu motivo de consulta...'
                             {...field}
@@ -201,9 +226,18 @@ export default function ContactSection() {
                     )}
                   />
 
-                  <Button type='submit' className='w-full'>
+                  <Button
+                    type='submit'
+                    disabled={
+                      form.formState.isSubmitting || loading || cooldown
+                    }
+                    className='w-full'>
                     <Send className='w-4 h-4 mr-2' />
-                    Enviar mensaje
+                    {loading
+                      ? 'Enviando...'
+                      : cooldown
+                        ? 'Mensaje enviado. Espera un momento...'
+                        : 'Enviar mensaje'}
                   </Button>
                 </form>
               </Form>

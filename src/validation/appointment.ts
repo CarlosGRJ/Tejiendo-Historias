@@ -14,9 +14,10 @@ export const appointmentSchema = z.object({
       message: 'Selecciona un horario válido',
     }),
   service: z
-    .union([z.string().nonempty('Selecciona un servicio'), z.enum(SERVICES)])
-    .refine((val) => val !== '', {
-      message: 'Selecciona un servicio',
+    .string()
+    .min(1, { message: 'Selecciona un servicio' })
+    .refine((val) => SERVICES.some(s => s.title === val), {
+      message: 'Servicio no válido',
     }),
   message: z.string().optional(),
 });
