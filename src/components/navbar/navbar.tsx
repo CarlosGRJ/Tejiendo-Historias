@@ -36,7 +36,7 @@ const NavbarPage = () => {
 
   return (
     <nav
-      className={`px-26 h-20 bg-background border-b ${isSticky ? 'sticky' : ''}`}
+      className={`sm:px-26 h-20 bg-background border-b ${isSticky ? 'sticky' : ''}`}
       role='navigation'
       aria-label='Barra de navegación principal'>
       <div className='h-full flex items-center justify-between max-w-screen-2xl mx-auto px-4'>
