@@ -2,12 +2,12 @@ import { Metadata } from 'next';
 import { getPostBySlug } from '@/actions/blog/posts';
 import BlogPostClient from '@/components/blog-post-client/BlogPostClient';
 
-interface Props {
-  params: { slug: string };
-}
+type Props = {
+  params: Promise<{ slug: string }>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   const post = await getPostBySlug(slug);
 
   if (!post) {
