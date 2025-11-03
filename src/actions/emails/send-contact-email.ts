@@ -37,7 +37,7 @@ export async function sendContactEmail(data: ContactFormData) {
 
   try {
     await resend.emails.send({
-      from: 'Carlos Rojas <hello@carlosrojasj.dev>',
+      from: 'Andrea Armenta García <andreaag@tejiendohistoriaas.com.mx>',
       to: ['carlosgrj@outlook.com'],
       subject: 'Nuevo mensaje desde el formulario de contacto',
       html,
