@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /admin
+
+# Host
+Host: https://www.tejiendohistorias.com.mx
+
+# Sitemaps
+Sitemap: https://www.tejiendohistorias.com.mx/sitemap.xml
