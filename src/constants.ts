@@ -1,10 +1,3 @@
-// export const SERVICES = [
-//   'Proceso terapéutico individual',
-//   'Proceso terapéutico de pareja',
-//   'Proceso terapéutico grupal',
-//   'Talleres - sesiones completas',
-// ] as const;
-
 import { Service } from './types/services';
 
 export const TIME_SLOTS = [

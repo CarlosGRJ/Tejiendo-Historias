@@ -45,6 +45,7 @@ export async function sendConfirmationEmail(
     await resend.emails.send({
       //   from: 'Tejiendo Historias <no-reply@tejiendohistorias.com>',
       //   to: data.email,
+      // TODO: ADD REAL EMAILS
       from: 'Carlos Rojas <hello@carlosrojasj.dev>',
       to: ['carlosgrjpruebas@gmail.com'],
       subject: 'Tu cita ha sido agendada – Tejiendo Historias',
@@ -54,6 +55,7 @@ export async function sendConfirmationEmail(
     await resend.emails.send({
       //   from: 'Tejiendo Historias <no-reply@tejiendohistorias.com>',
       //   to: process.env.AUTH_EMAIL!,
+      // TODO: ADD REAL EMAILS
       from: 'Carlos Rojas <hello@carlosrojasj.dev>',
       to: ['carlosgrj2013@gmail.com'],
       subject: 'Nueva cita agendada',
