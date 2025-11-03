@@ -46,7 +46,7 @@ export async function sendConfirmationEmail(
       //   from: 'Tejiendo Historias <no-reply@tejiendohistorias.com>',
       //   to: data.email,
       // TODO: ADD REAL EMAILS
-      from: 'Carlos Rojas <hello@carlosrojasj.dev>',
+      from: 'Andrea Armenta García <andreaag@tejiendohistoriaas.com.mx>',
       to: ['carlosgrjpruebas@gmail.com'],
       subject: 'Tu cita ha sido agendada – Tejiendo Historias',
       html: confirmationHtml,
@@ -56,7 +56,7 @@ export async function sendConfirmationEmail(
       //   from: 'Tejiendo Historias <no-reply@tejiendohistorias.com>',
       //   to: process.env.AUTH_EMAIL!,
       // TODO: ADD REAL EMAILS
-      from: 'Carlos Rojas <hello@carlosrojasj.dev>',
+      from: 'Andrea Armenta García <andreaag@tejiendohistoriaas.com.mx>',
       to: ['carlosgrj2013@gmail.com'],
       subject: 'Nueva cita agendada',
       html: notificationHtml,
