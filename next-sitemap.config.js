@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: 'https://www.tejiendohistorias.com.mx',
+  siteUrl: 'https://www.tejiendohistoriaas.com.mx',
   generateRobotsTxt: true,
   generateIndexSitemap: false,
   sitemapSize: 7000,

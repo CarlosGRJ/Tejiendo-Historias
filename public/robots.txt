@@ -7,7 +7,4 @@ User-agent: *
 Disallow: /admin
 
 # Host
-Host: https://www.tejiendohistorias.com.mx
-
-# Sitemaps
-Sitemap: https://www.tejiendohistorias.com.mx/sitemap.xml
+Host: https://www.tejiendohistoriaas.com.mx
