@@ -16,10 +16,13 @@ export const appointmentSchema = z.object({
   service: z
     .string()
     .min(1, { message: 'Selecciona un servicio' })
-    .refine((val) => SERVICES.some(s => s.title === val), {
+    .refine((val) => SERVICES.some((s) => s.title === val), {
       message: 'Servicio no válido',
     }),
   message: z.string().optional(),
+  turnstileToken: z
+    .string()
+    .min(1, 'Por favor, completa el captcha antes de enviar.'),
 });
 
 export type AppointmentFormValues = z.infer<typeof appointmentSchema>;

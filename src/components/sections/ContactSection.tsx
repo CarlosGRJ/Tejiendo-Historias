@@ -29,11 +29,16 @@ import { SERVICES } from '@/constants';
 import { useState } from 'react';
 import { sendContactEmail } from '@/actions/emails/send-contact-email';
 
+import Turnstile from 'react-cloudflare-turnstile';
+
 const contactSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
   email: z.string().email('Correo inválido'),
   service: z.string().nonempty('Selecciona un servicio'),
   message: z.string().min(10, 'El mensaje es muy corto'),
+  turnstileToken: z
+    .string()
+    .min(1, 'Por favor, completa el captcha antes de enviar.'),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -53,6 +58,7 @@ export default function ContactSection() {
       email: '',
       service: '',
       message: '',
+      turnstileToken: '',
     },
   });
 
@@ -219,6 +225,29 @@ export default function ContactSection() {
                             rows={4}
                             placeholder='Cuéntame brevemente tu motivo de consulta...'
                             {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='turnstileToken'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Verificación</FormLabel>
+                        <FormControl>
+                          <Turnstile
+                            turnstileSiteKey={
+                              process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!
+                            }
+                            callback={(token) => field.onChange(token)}
+                            theme='light'
+                            size='normal'
+                            retry='auto'
+                            refreshExpired='auto'
                           />
                         </FormControl>
                         <FormMessage />

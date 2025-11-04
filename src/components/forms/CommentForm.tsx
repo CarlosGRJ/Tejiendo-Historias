@@ -10,6 +10,7 @@ import React, {
   useTransition,
 } from 'react';
 import { useForm } from 'react-hook-form';
+import Turnstile from 'react-cloudflare-turnstile';
 import {
   Form,
   FormControl,
@@ -40,6 +41,7 @@ export default function CommentForm({ postId, setComments }: Props) {
     defaultValues: {
       name: '',
       content: '',
+      turnstileToken: '',
     },
   });
 
@@ -136,6 +138,27 @@ export default function CommentForm({ postId, setComments }: Props) {
           )}
         />
 
+        <FormField
+          control={form.control}
+          name='turnstileToken'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Verificación</FormLabel>
+              <FormControl>
+                <Turnstile
+                  turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                  callback={(token) => field.onChange(token)}
+                  theme='light'
+                  size='normal'
+                  retry='auto'
+                  refreshExpired='auto'
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button
           type='submit'
           disabled={isPending || isThrottled}
@@ -144,8 +167,8 @@ export default function CommentForm({ postId, setComments }: Props) {
           {isPending
             ? 'Enviando...'
             : isThrottled
-            ? 'Espera unos segundos...'
-            : 'Enviar comentario'}
+              ? 'Espera unos segundos...'
+              : 'Enviar comentario'}
         </Button>
       </form>
     </Form>

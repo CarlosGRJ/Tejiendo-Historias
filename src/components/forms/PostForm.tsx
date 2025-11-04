@@ -8,6 +8,8 @@ import slugify from 'slugify';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
+import Turnstile from 'react-cloudflare-turnstile';
+
 import {
   Form,
   FormControl,
@@ -58,6 +60,7 @@ export function PostForm({
       content: '',
       category: '',
       slug: '',
+      turnstileToken: '',
     },
   });
 
@@ -251,6 +254,27 @@ export function PostForm({
           )}
         />
 
+        <FormField
+          control={form.control}
+          name='turnstileToken'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Verificación</FormLabel>
+              <FormControl>
+                <Turnstile
+                  turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                  callback={(token) => field.onChange(token)}
+                  theme='light'
+                  size='normal'
+                  retry='auto'
+                  refreshExpired='auto'
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button
           type='submit'
           disabled={isSubmitting}
@@ -259,8 +283,8 @@ export function PostForm({
           {isSubmitting
             ? 'Guardando...'
             : isEdit
-            ? 'Actualizar post'
-            : 'Publicar post'}
+              ? 'Actualizar post'
+              : 'Publicar post'}
         </Button>
       </form>
     </Form>

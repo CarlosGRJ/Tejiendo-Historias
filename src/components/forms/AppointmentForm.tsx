@@ -3,7 +3,9 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
+
 import { format } from 'date-fns';
+import Turnstile from 'react-cloudflare-turnstile';
 
 import {
   Form,
@@ -65,6 +67,7 @@ export function AppointmentForm({
       time: '',
       service: '',
       message: '',
+      turnstileToken: '',
     },
     mode: 'onBlur',
   });
@@ -314,6 +317,27 @@ export function AppointmentForm({
                   )}
                   placeholder='Cuéntanos brevemente si deseas'
                   {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name='turnstileToken'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Verificación</FormLabel>
+              <FormControl>
+                <Turnstile
+                  turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                  callback={(token) => field.onChange(token)}
+                  theme='light'
+                  size='normal'
+                  retry='auto'
+                  refreshExpired='auto'
                 />
               </FormControl>
               <FormMessage />

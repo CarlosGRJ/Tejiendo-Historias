@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CalendarIcon, Plus } from 'lucide-react';
+import Turnstile from 'react-cloudflare-turnstile';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -69,6 +70,9 @@ const adminAppointmentSchema = z.object({
       message: 'Servicio no válido',
     }),
   message: z.string().optional(),
+  turnstileToken: z
+    .string()
+    .min(1, 'Por favor, completa el captcha antes de enviar.'),
 });
 
 type AdminAppointmentFormValues = z.infer<typeof adminAppointmentSchema>;
@@ -87,6 +91,7 @@ export function AdminAppointmentForm({ onSuccess }: { onSuccess: () => void }) {
       time: '',
       service: '',
       message: 'Cancelación de hora',
+      turnstileToken: '',
     },
     mode: 'onBlur',
   });
@@ -329,6 +334,29 @@ export function AdminAppointmentForm({ onSuccess }: { onSuccess: () => void }) {
                     />
                   </FormControl>
                   <FormMessage id='admin-message-error' />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='turnstileToken'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Verificación</FormLabel>
+                  <FormControl>
+                    <Turnstile
+                      turnstileSiteKey={
+                        process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!
+                      }
+                      callback={(token) => field.onChange(token)}
+                      theme='light'
+                      size='normal'
+                      retry='auto'
+                      refreshExpired='auto'
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
