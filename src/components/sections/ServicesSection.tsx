@@ -52,7 +52,7 @@ export default function ServicesSection() {
                 </CardHeader>
 
                 <CardContent className='text-muted-foreground'>
-                  <p>{service.description}</p>
+                  {service.description}
                 </CardContent>
 
                 <CardFooter className='mt-auto'>
@@ -74,22 +74,18 @@ export default function ServicesSection() {
                 </div>
 
                 <DialogDescription className='text-muted-foreground space-y-6'>
-                  {service.sections ? (
-                    service.sections.map((section, idx) => (
-                      <article key={idx}>
-                        <h4 className='text-base font-semibold text-foreground mb-1'>
-                          {section.title}
-                        </h4>
-                        <p className='text-sm leading-relaxed whitespace-pre-line text-muted-foreground'>
-                          {section.content}
-                        </p>
-                      </article>
-                    ))
-                  ) : (
-                    <p className='whitespace-pre-line leading-relaxed text-sm'>
-                      {service.fullDescription}
-                    </p>
-                  )}
+                  {service.sections
+                    ? service.sections.map((section, idx) => (
+                        <article key={idx}>
+                          <h4 className='text-base font-semibold text-foreground mb-1'>
+                            {section.title}
+                          </h4>
+                          <p className='text-sm leading-relaxed whitespace-pre-line text-muted-foreground'>
+                            {section.content}
+                          </p>
+                        </article>
+                      ))
+                    : service.fullDescription}
                 </DialogDescription>
               </DialogHeader>
 

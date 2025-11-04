@@ -34,6 +34,14 @@ import Turnstile from 'react-cloudflare-turnstile';
 const contactSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
   email: z.string().email('Correo inválido'),
+  phone: z
+    .string()
+    .regex(
+      /^(?:\+52)?\s?(?:\d{2,3}[\s-]?\d{3}[\s-]?\d{4})$/,
+      'Número de teléfono inválido. Debe ser un número válido (10 dígitos).',
+    )
+    .min(10, 'El teléfono es requerido')
+    .max(15, 'Número demasiado largo'),
   service: z.string().nonempty('Selecciona un servicio'),
   message: z.string().min(10, 'El mensaje es muy corto'),
   turnstileToken: z
@@ -56,6 +64,7 @@ export default function ContactSection() {
     defaultValues: {
       name: '',
       email: '',
+      phone: '',
       service: '',
       message: '',
       turnstileToken: '',
@@ -176,6 +185,27 @@ export default function ContactSection() {
                             type='email'
                             id='contact-email'
                             placeholder='correo@ejemplo.com'
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='phone'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor='contact-phone'>Teléfono</FormLabel>
+                        <FormControl>
+                          <Input
+                            id='contact-phone'
+                            placeholder='Número de teléfono'
+                            type='tel'
+                            minLength={10}
+                            maxLength={15}
                             {...field}
                           />
                         </FormControl>

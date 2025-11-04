@@ -34,6 +34,7 @@ export async function sendConfirmationEmail(
       NewAppointmentNotification({
         name: data.name,
         email: data.email,
+        phone: data.phone,
         date: formattedDate,
         time: data.time,
         service: data.service,

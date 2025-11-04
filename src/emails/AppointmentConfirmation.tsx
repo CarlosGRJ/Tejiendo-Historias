@@ -52,9 +52,9 @@ export default function AppointmentConfirmationEmail({
               💼 <strong>Servicio:</strong> {service}
             </Text>
 
-            <Text className='text-[#333333] text-base mt-6'>
-              Andrea te contactará pronto para mandarte la invitación a tu
-              sesión.
+            <Text className='text-[#333333] text-base mt-2'>
+              En breve Andrea se pondrá en contacto contigo para enviarte la
+              invitación a tu sesión en línea.
             </Text>
           </Container>
         </Section>

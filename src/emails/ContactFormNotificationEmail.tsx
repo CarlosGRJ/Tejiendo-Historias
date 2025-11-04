@@ -11,6 +11,7 @@ import {
 type Props = {
   name: string;
   email: string;
+  phone: string;
   service: string;
   message: string;
 };
@@ -18,6 +19,7 @@ type Props = {
 export default function ContactFormNotificationEmail({
   name,
   email,
+  phone,
   service,
   message,
 }: Props) {
@@ -47,6 +49,8 @@ export default function ContactFormNotificationEmail({
               👤 <strong>Nombre:</strong> {name}
               <br />
               📧 <strong>Correo:</strong> {email}
+              <br />
+              📞 <strong>Teléfono:</strong> {phone}
               <br />
               💼 <strong>Servicio de interés:</strong> {service}
               <br />

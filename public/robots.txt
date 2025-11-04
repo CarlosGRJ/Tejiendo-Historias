@@ -8,3 +8,6 @@ Disallow: /admin
 
 # Host
 Host: https://www.tejiendohistoriaas.com.mx
+
+# Sitemaps
+Sitemap: https://www.tejiendohistoriaas.com.mx/sitemap.xml

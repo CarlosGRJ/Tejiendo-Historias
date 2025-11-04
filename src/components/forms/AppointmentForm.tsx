@@ -63,6 +63,7 @@ export function AppointmentForm({
     defaultValues: {
       name: '',
       email: '',
+      phone: '',
       date: undefined,
       time: '',
       service: '',
@@ -190,6 +191,27 @@ export function AppointmentForm({
                   type='email'
                   placeholder='tucorreo@email.com'
                   aria-required='true'
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name='phone'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor='contact-phone'>Teléfono</FormLabel>
+              <FormControl>
+                <Input
+                  id='contact-phone'
+                  placeholder='Número de teléfono'
+                  type='tel'
+                  minLength={10}
+                  maxLength={15}
                   {...field}
                 />
               </FormControl>

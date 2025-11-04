@@ -12,6 +12,7 @@ import {
 type Props = {
   name: string;
   email: string;
+  phone: string;
   date: string;
   time: string;
   service: string;
@@ -22,6 +23,7 @@ type Props = {
 export default function NewAppointmentNotificationEmail({
   name,
   email,
+  phone,
   date,
   time,
   service,
@@ -55,6 +57,8 @@ export default function NewAppointmentNotificationEmail({
               📌 <strong>Nombre:</strong> {name}
               <br />
               📧 <strong>Correo:</strong> {email}
+              <br />
+              📞 <strong>Teléfono:</strong> {phone}
               <br />
               📅 <strong>Fecha:</strong> {date}
               <br />

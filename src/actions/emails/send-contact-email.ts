@@ -1,5 +1,3 @@
-// file: app/actions/emails/send-contact-email.ts
-
 'use server';
 
 import { Resend } from 'resend';
@@ -12,6 +10,14 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const contactSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
+  phone: z
+    .string()
+    .regex(
+      /^(?:\+52)?\s?(?:\d{2,3}[\s-]?\d{3}[\s-]?\d{4})$/,
+      'Número de teléfono inválido. Debe ser un número válido (10 dígitos).',
+    )
+    .min(10, 'El teléfono es requerido')
+    .max(15, 'Número demasiado largo'),
   service: z.string().nonempty(),
   message: z.string().min(10),
 });
@@ -24,12 +30,13 @@ export async function sendContactEmail(data: ContactFormData) {
     throw new Error('Datos de contacto inválidos');
   }
 
-  const { name, email, service, message } = validated.data;
+  const { name, email, phone, service, message } = validated.data;
 
   const html = await render(
     ContactFormNotificationEmail({
       name,
       email,
+      phone,
       service,
       message,
     }),

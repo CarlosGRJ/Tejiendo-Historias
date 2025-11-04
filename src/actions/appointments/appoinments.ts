@@ -12,6 +12,7 @@ export async function createAppointment(data: AppointmentFormValues) {
     {
       name: data.name,
       email: data.email,
+      phone: data.phone,
       date: data.date.toISOString().split('T')[0], // ensure YYYY-MM-DD format
       time: data.time,
       service: data.service,

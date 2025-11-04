@@ -56,6 +56,14 @@ import { es } from 'date-fns/locale';
 const adminAppointmentSchema = z.object({
   name: z.string().min(2, { message: 'El nombre es requerido' }),
   email: z.string().email({ message: 'Correo electrónico inválido' }),
+  phone: z
+    .string()
+    .regex(
+      /^(?:\+52)?\s?(?:\d{2,3}[\s-]?\d{3}[\s-]?\d{4})$/,
+      'Número de teléfono inválido. Debe ser un número válido (10 dígitos).',
+    )
+    .min(10, 'El teléfono es requerido')
+    .max(15, 'Número demasiado largo'),
   date: z.date({ required_error: 'Selecciona una fecha válida' }),
   time: z
     .string()
@@ -87,6 +95,7 @@ export function AdminAppointmentForm({ onSuccess }: { onSuccess: () => void }) {
     defaultValues: {
       name: '',
       email: '',
+      phone: '',
       date: undefined,
       time: '',
       service: '',
@@ -197,6 +206,27 @@ export function AdminAppointmentForm({ onSuccess }: { onSuccess: () => void }) {
                     />
                   </FormControl>
                   <FormMessage id='admin-email-error' />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='phone'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor='contact-phone'>Teléfono</FormLabel>
+                  <FormControl>
+                    <Input
+                      id='contact-phone'
+                      placeholder='Número de teléfono'
+                      type='tel'
+                      minLength={10}
+                      maxLength={15}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
