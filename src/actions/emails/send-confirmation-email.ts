@@ -44,21 +44,15 @@ export async function sendConfirmationEmail(
     );
 
     await resend.emails.send({
-      //   from: 'Tejiendo Historias <no-reply@tejiendohistorias.com>',
-      //   to: data.email,
-      // TODO: ADD REAL EMAILS
       from: 'Andrea Armenta García <andreaag@tejiendohistoriaas.com.mx>',
-      to: ['carlosgrjpruebas@gmail.com'],
+      to: [data.email],
       subject: 'Tu cita ha sido agendada – Tejiendo Historias',
       html: confirmationHtml,
     });
 
     await resend.emails.send({
-      //   from: 'Tejiendo Historias <no-reply@tejiendohistorias.com>',
-      //   to: process.env.AUTH_EMAIL!,
-      // TODO: ADD REAL EMAILS
       from: 'Andrea Armenta García <andreaag@tejiendohistoriaas.com.mx>',
-      to: ['carlosgrj2013@gmail.com'],
+      to: [process.env.AUTH_EMAIL!],
       subject: 'Nueva cita agendada',
       html: notificationHtml,
       attachments: [

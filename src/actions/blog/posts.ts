@@ -100,10 +100,15 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 export async function updatePost(postId: string, updatedData: PostUpdate) {
   const supabase = await createClient();
 
+  const removingTurnstileToken = {
+    ...updatedData,
+    turnstileToken: undefined,
+  };
+
   const { data, error } = await supabase
     .from('posts')
     .update({
-      ...updatedData,
+      ...removingTurnstileToken,
       updated_at: new Date().toISOString(),
     })
     .eq('id', postId)

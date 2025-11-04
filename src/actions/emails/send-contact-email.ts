@@ -45,7 +45,7 @@ export async function sendContactEmail(data: ContactFormData) {
   try {
     await resend.emails.send({
       from: 'Andrea Armenta García <andreaag@tejiendohistoriaas.com.mx>',
-      to: ['carlosgrj@outlook.com'],
+      to: [process.env.AUTH_EMAIL!],
       subject: 'Nuevo mensaje desde el formulario de contacto',
       html,
     });
