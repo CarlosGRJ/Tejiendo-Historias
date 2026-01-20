@@ -32,7 +32,7 @@ import {
   appointmentSchema,
 } from '@/validation/appointment';
 import {
-  createAppointment,
+  createSingleAppointment,
   getBookedTimeSlotsByDate,
 } from '@/actions/appointments/appoinments';
 import {
@@ -92,7 +92,7 @@ export function AppointmentForm({
   async function onSubmit(data: AppointmentFormValues) {
     setIsSubmitting(true);
     try {
-      await createAppointment(data);
+      await createSingleAppointment(data);
 
       const calendarLink = generateGoogleCalendarLink({
         email: data.email,

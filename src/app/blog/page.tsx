@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { getPaginatedPosts } from '@/actions/blog/posts';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,7 @@ export default function Blog() {
   const isAdmin =
     isAuthenticated && user?.email === process.env.NEXT_PUBLIC_AUTH_EMAIL;
 
-  const fetchPostsPerPage = async (page = currentPage) => {
+  const fetchPostsPerPage = useCallback(async (page = currentPage) => {
     try {
       setIsLoading(true);
       const { posts, total } = await getPaginatedPosts(page, POSTS_PER_PAGE);
@@ -52,11 +52,11 @@ export default function Blog() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage]);
 
   useEffect(() => {
     fetchPostsPerPage();
-  }, [currentPage]);
+  }, [fetchPostsPerPage]);
 
   const handleDeleteSuccess = async (id: string) => {
     // Eliminamos el post visualmente

@@ -2,7 +2,6 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { CalendarIcon, Plus } from 'lucide-react';
 import Turnstile from 'react-cloudflare-turnstile';
 
@@ -40,50 +39,32 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 import {
-  createAppointment,
+  createSingleAppointment,
+  createRecurringAppointment,
   getBookedTimeSlotsByDate,
 } from '@/actions/appointments/appoinments';
 
 import { SERVICES, TIME_SLOTS } from '@/constants';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-// Admin-specific appointment schema (bypasses availability checks)
-const adminAppointmentSchema = z.object({
-  name: z.string().min(2, { message: 'El nombre es requerido' }),
-  email: z.string().email({ message: 'Correo electrónico inválido' }),
-  phone: z
-    .string()
-    .regex(
-      /^(?:\+52)?\s?(?:\d{2,3}[\s-]?\d{3}[\s-]?\d{4})$/,
-      'Número de teléfono inválido. Debe ser un número válido (10 dígitos).',
-    )
-    .min(10, 'El teléfono es requerido')
-    .max(15, 'Número demasiado largo'),
-  date: z.date({ required_error: 'Selecciona una fecha válida' }),
-  time: z
-    .string()
-    .min(1, { message: 'Selecciona un horario válido' })
-    .refine((val) => TIME_SLOTS.includes(val as (typeof TIME_SLOTS)[number]), {
-      message: 'Horario no válido',
-    }),
-  service: z
-    .string()
-    .min(1, { message: 'Selecciona un servicio' })
-    .refine((val) => SERVICES.some((s) => s.title === val), {
-      message: 'Servicio no válido',
-    }),
-  message: z.string().optional(),
-  turnstileToken: z
-    .string()
-    .min(1, 'Por favor, completa el captcha antes de enviar.'),
-});
-
-type AdminAppointmentFormValues = z.infer<typeof adminAppointmentSchema>;
+import {
+  RECURRENCE_DAYS,
+  RecurrenceDay,
+  RecurringAppointmentPayload,
+  SingleAppointmentPayload,
+} from '@/types/appointment';
+import {
+  AdminAppointmentFormValues,
+  adminAppointmentSchema,
+  isRecurringAppointment,
+  isSingleAppointment,
+  RecurringAppointmentValues,
+  SingleAppointmentValues,
+} from '@/validation/admin-appointment';
 
 export function AdminAppointmentForm({ onSuccess }: { onSuccess: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -99,17 +80,32 @@ export function AdminAppointmentForm({ onSuccess }: { onSuccess: () => void }) {
       date: undefined,
       time: '',
       service: '',
-      message: 'Cancelación de hora',
+      message: '',
+      isRecurring: false,
+      recurrenceStartDate: undefined,
+      recurrenceEndDate: undefined,
+      recurrenceDays: [],
+      recurrenceTimes: {},
       turnstileToken: '',
     },
     mode: 'onBlur',
   });
 
   const selectedDate = form.watch('date');
+  const isRecurring = form.watch('isRecurring');
+  const recurrenceStartDate = form.watch('recurrenceStartDate');
+  const selectedRecurrenceDays = form.watch('recurrenceDays') ?? [];
+  const recurrenceDaysByValue = useMemo(() => {
+    const entries = RECURRENCE_DAYS.map((day) => [day.value, day]);
+    return Object.fromEntries(entries) as Record<
+      RecurrenceDay,
+      (typeof RECURRENCE_DAYS)[number]
+    >;
+  }, []);
 
   // Fetch booked slots when date changes
   useEffect(() => {
-    if (!selectedDate) {
+    if (!selectedDate || isRecurring) {
       setBookedSlots([]);
       return;
     }
@@ -125,21 +121,89 @@ export function AdminAppointmentForm({ onSuccess }: { onSuccess: () => void }) {
     };
 
     fetchBookedSlots();
-  }, [selectedDate]);
+  }, [isRecurring, selectedDate]);
+
+  useEffect(() => {
+    if (isRecurring) {
+      form.setValue('date', undefined, { shouldValidate: true });
+      form.setValue('time', '', { shouldValidate: true });
+      setBookedSlots([]);
+      return;
+    }
+
+    form.setValue('recurrenceStartDate', undefined, { shouldValidate: true });
+    form.setValue('recurrenceEndDate', undefined, { shouldValidate: true });
+    form.setValue('recurrenceDays', [], { shouldValidate: true });
+    form.setValue('recurrenceTimes', {}, { shouldValidate: true });
+  }, [form, isRecurring]);
+
+  async function handleCreateSingleAppointment(
+    data: SingleAppointmentValues,
+  ) {
+    const payload: SingleAppointmentPayload = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      date: data.date,
+      time: data.time,
+      service: data.service,
+      message: data.message,
+      turnstileToken: data.turnstileToken,
+    };
+
+    await createSingleAppointment(payload);
+  }
+
+  async function handleCreateRecurringAppointment(
+    data: RecurringAppointmentValues,
+  ) {
+    const payload: RecurringAppointmentPayload = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      service: data.service,
+      message: data.message,
+      turnstileToken: data.turnstileToken,
+      recurrenceStartDate: data.recurrenceStartDate,
+      recurrenceEndDate: data.recurrenceEndDate,
+      recurrenceDays: data.recurrenceDays,
+      recurrenceTimes: data.recurrenceTimes,
+    };
+
+    return createRecurringAppointment(payload);
+  }
 
   const onSubmit = async (data: AdminAppointmentFormValues) => {
     setIsSubmitting(true);
 
     try {
-      await createAppointment(data);
+      if (isRecurringAppointment(data)) {
+        const result = await handleCreateRecurringAppointment(data);
+        if (!result.ok) {
+          toast.error(result.error);
+          return;
+        }
+      } else if (isSingleAppointment(data)) {
+        await handleCreateSingleAppointment(data);
+      } else {
+        toast.error('Completa el formulario antes de enviar.');
+        return;
+      }
 
-      toast.success('Cita creada exitosamente');
+      toast.success(
+        data.isRecurring
+          ? 'Cita recurrente configurada correctamente'
+          : 'Cita creada exitosamente',
+      );
+
       form.reset();
       setIsOpen(false);
       onSuccess();
     } catch (error) {
-      console.error('Error creating appointment:', error);
-      toast.error('Error al crear la cita');
+      console.error('Error submitting appointment:', error);
+      const message =
+        error instanceof Error ? error.message : 'Error al procesar la cita';
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -163,7 +227,7 @@ export function AdminAppointmentForm({ onSuccess }: { onSuccess: () => void }) {
           <DialogTitle>Crear Nueva Cita</DialogTitle>
           <DialogDescription>
             Como administrador, puedes crear citas en cualquier horario para
-            bloquear espacios.
+            bloquear espacios o configurar una recurrencia.
           </DialogDescription>
         </DialogHeader>
 
@@ -233,91 +297,344 @@ export function AdminAppointmentForm({ onSuccess }: { onSuccess: () => void }) {
 
             <FormField
               control={form.control}
-              name='date'
+              name='isRecurring'
               render={({ field }) => (
-                <FormItem className='flex flex-col'>
-                  <FormLabel htmlFor='admin-date'>Fecha de la Cita</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          id='admin-date'
-                          variant='outline'
-                          className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground',
-                          )}
-                          aria-describedby='admin-date-error'>
-                          {field.value ? (
-                            format(field.value, 'PPP', { locale: es })
-                          ) : (
-                            <span>Selecciona una fecha</span>
-                          )}
-                          <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className='w-auto p-0' align='start'>
-                      <Calendar
-                        mode='single'
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) => {
-                          const isPast = date < new Date();
-                          const isWeekend =
-                            date.getDay() === 0 || date.getDay() === 6;
-                          return isPast || isWeekend;
-                        }}
-                        autoFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage id='admin-date-error' />
+                <FormItem className='flex items-center justify-between gap-4 rounded-lg border p-3'>
+                  <div>
+                    <FormLabel
+                      htmlFor='admin-recurring'
+                      className='text-sm font-medium'>
+                      Cita recurrente
+                    </FormLabel>
+                    <p className='text-sm text-muted-foreground'>
+                      Activa esta opción para definir días y horarios fijos.
+                    </p>
+                  </div>
+                  <FormControl>
+                    <input
+                      id='admin-recurring'
+                      type='checkbox'
+                      checked={field.value}
+                      onChange={(event) => field.onChange(event.target.checked)}
+                      className='h-4 w-4 accent-primary'
+                      aria-label='Activar cita recurrente'
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name='time'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor='admin-time'>Horario</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger
-                        id='admin-time'
-                        aria-describedby='admin-time-error'>
-                        <SelectValue placeholder='Selecciona un horario' />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {TIME_SLOTS.map((timeSlot) => {
-                        const isBooked = isSlotBooked(timeSlot);
-                        return (
-                          <SelectItem
-                            key={timeSlot}
-                            value={timeSlot}
-                            className={isBooked ? 'text-orange-600' : ''}>
-                            {timeSlot}{' '}
-                            {isBooked && '(Ocupado - Admin puede sobrescribir)'}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage id='admin-time-error' />
-                  {selectedDate && bookedSlots.length > 0 && (
-                    <p className='text-sm text-muted-foreground'>
-                      Los horarios marcados como ocupados pueden ser
-                      sobrescritos por el admin.
-                    </p>
+            {!isRecurring && (
+              <>
+                <FormField
+                  control={form.control}
+                  name='date'
+                  render={({ field }) => (
+                    <FormItem className='flex flex-col'>
+                      <FormLabel htmlFor='admin-date'>
+                        Fecha de la Cita
+                      </FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              id='admin-date'
+                              variant='outline'
+                              className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground',
+                              )}
+                              aria-describedby='admin-date-error'>
+                              {field.value ? (
+                                format(field.value, 'PPP', { locale: es })
+                              ) : (
+                                <span>Selecciona una fecha</span>
+                              )}
+                              <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className='w-auto p-0' align='start'>
+                          <Calendar
+                            mode='single'
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => {
+                              const isPast = date < new Date();
+                              const isWeekend =
+                                date.getDay() === 0 || date.getDay() === 6;
+                              return isPast || isWeekend;
+                            }}
+                            autoFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage id='admin-date-error' />
+                    </FormItem>
                   )}
-                </FormItem>
-              )}
-            />
+                />
+
+                <FormField
+                  control={form.control}
+                  name='time'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor='admin-time'>Horario</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger
+                            id='admin-time'
+                            aria-describedby='admin-time-error'>
+                            <SelectValue placeholder='Selecciona un horario' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {TIME_SLOTS.map((timeSlot) => {
+                            const isBooked = isSlotBooked(timeSlot);
+                            return (
+                              <SelectItem
+                                key={timeSlot}
+                                value={timeSlot}
+                                className={isBooked ? 'text-orange-600' : ''}>
+                                {timeSlot}{' '}
+                                {isBooked &&
+                                  '(Ocupado - Admin puede sobrescribir)'}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage id='admin-time-error' />
+                      {selectedDate && bookedSlots.length > 0 && (
+                        <p className='text-sm text-muted-foreground'>
+                          Los horarios marcados como ocupados pueden ser
+                          sobrescritos por el admin.
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            {isRecurring && (
+              <>
+                <FormField
+                  control={form.control}
+                  name='recurrenceStartDate'
+                  render={({ field }) => (
+                    <FormItem className='flex flex-col'>
+                      <FormLabel htmlFor='admin-recurrence-start'>
+                        Fecha de inicio
+                      </FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              id='admin-recurrence-start'
+                              variant='outline'
+                              className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground',
+                              )}
+                              aria-describedby='admin-recurrence-start-error'>
+                              {field.value ? (
+                                format(field.value, 'PPP', { locale: es })
+                              ) : (
+                                <span>Selecciona la fecha de inicio</span>
+                              )}
+                              <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className='w-auto p-0' align='start'>
+                          <Calendar
+                            mode='single'
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => date < new Date()}
+                            autoFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage id='admin-recurrence-start-error' />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='recurrenceEndDate'
+                  render={({ field }) => (
+                    <FormItem className='flex flex-col'>
+                      <FormLabel htmlFor='admin-recurrence-end'>
+                        Fecha de fin (opcional)
+                      </FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              id='admin-recurrence-end'
+                              variant='outline'
+                              className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground',
+                              )}
+                              aria-describedby='admin-recurrence-end-error'>
+                              {field.value ? (
+                                format(field.value, 'PPP', { locale: es })
+                              ) : (
+                                <span>Selecciona la fecha de fin</span>
+                              )}
+                              <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className='w-auto p-0' align='start'>
+                          <Calendar
+                            mode='single'
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => {
+                              if (recurrenceStartDate) {
+                                return date < recurrenceStartDate;
+                              }
+                              return date < new Date();
+                            }}
+                            autoFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage id='admin-recurrence-end-error' />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='recurrenceDays'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='text-sm font-medium'>
+                        Días de la semana
+                      </FormLabel>
+                      <FormControl>
+                        <div className='grid grid-cols-2 gap-2 sm:grid-cols-3'>
+                        {RECURRENCE_DAYS.map((day) => {
+                          const isChecked =
+                            field.value?.includes(day.value) ?? false;
+                          return (
+                              <label
+                                key={day.value}
+                                htmlFor={`recurrence-day-${day.value}`}
+                                className={cn(
+                                  'flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors',
+                                  isChecked
+                                    ? 'border-primary/50 bg-primary/10'
+                                    : 'border-border',
+                                )}>
+                                <input
+                                  id={`recurrence-day-${day.value}`}
+                                  type='checkbox'
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    if (!field.value) {
+                                      field.onChange([day.value]);
+                                      return;
+                                    }
+
+                                    if (isChecked) {
+                                      const nextDays = field.value.filter(
+                                        (value) => value !== day.value,
+                                      );
+                                      const currentTimes =
+                                        form.getValues('recurrenceTimes') ?? {};
+                                      if (day.value in currentTimes) {
+                                        const rest = Object.fromEntries(
+                                          Object.entries(currentTimes).filter(
+                                            ([key]) => key !== day.value,
+                                          ),
+                                        );
+                                        form.setValue('recurrenceTimes', rest, {
+                                          shouldValidate: true,
+                                        });
+                                        form.clearErrors(
+                                          `recurrenceTimes.${day.value}`,
+                                        );
+                                      }
+                                      field.onChange(nextDays);
+                                    } else {
+                                      field.onChange([
+                                        ...field.value,
+                                        day.value,
+                                      ]);
+                                    }
+                                  }}
+                                  className='h-4 w-4 accent-primary'
+                                  aria-label={`Seleccionar ${day.label}`}
+                                />
+                                <span>{day.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </FormControl>
+                      <FormMessage id='admin-recurrence-days-error' />
+                    </FormItem>
+                  )}
+                />
+
+                {selectedRecurrenceDays.length > 0 && (
+                  <div className='space-y-3'>
+                    <p className='text-sm font-medium'>
+                      Horarios por día seleccionado
+                    </p>
+                    {selectedRecurrenceDays.map((day) => (
+                      <FormField
+                        key={day}
+                        control={form.control}
+                        name={`recurrenceTimes.${day}` as const}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel htmlFor={`recurrence-time-${day}`}>
+                              {recurrenceDaysByValue[day].label}
+                            </FormLabel>
+                            <Select
+                              value={field.value ?? ''}
+                              onValueChange={(value) => {
+                                form.setValue(
+                                  `recurrenceTimes.${day}` as const,
+                                  value,
+                                  { shouldValidate: true },
+                                );
+                                form.clearErrors(`recurrenceTimes.${day}`);
+                              }}>
+                              <FormControl>
+                                <SelectTrigger
+                                  id={`recurrence-time-${day}`}
+                                  aria-describedby={`recurrence-time-${day}-error`}>
+                                <SelectValue placeholder='Selecciona un horario' />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {TIME_SLOTS.map((timeSlot) => (
+                                  <SelectItem key={timeSlot} value={timeSlot}>
+                                    {timeSlot}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage id={`recurrence-time-${day}-error`} />
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
 
             <FormField
               control={form.control}

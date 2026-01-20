@@ -2,25 +2,25 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { format, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 
 import {
   deleteAppointment,
+  getAppointmentSeries,
   getAllAppointments,
+  deleteAppointmentSeries,
+  updateAppointmentSeriesSchedule,
+  updateSingleAppointment,
 } from '@/actions/appointments/appoinments';
-import { Appointment } from '@/types/appointment';
+import {
+  Appointment,
+  AppointmentFilter,
+  AppointmentSeriesWithDays,
+  RecurringScheduleUpdatePayload,
+  SingleAppointmentUpdatePayload,
+} from '@/types/appointment';
 import { AdminAppointmentForm } from '@/components/appointment-client/AdminAppointmentForm';
-import { Button } from '@/components/ui/button';
+import { SingleAppointmentsTable } from '@/components/admin/appointments/SingleAppointmentsTable';
+import { RecurringAppointmentsTable } from '@/components/admin/appointments/RecurringAppointmentsTable';
 
 const PAGE_SIZE = 5;
 
@@ -28,15 +28,26 @@ export default function AppointmentsDashboard() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [appointmentFilter, setAppointmentFilter] =
+    useState<AppointmentFilter>('all');
+  const [series, setSeries] = useState<AppointmentSeriesWithDays[]>([]);
+  const [isSeriesLoading, setIsSeriesLoading] = useState(true);
+  const [seriesPage, setSeriesPage] = useState(1);
+  const [seriesTotal, setSeriesTotal] = useState(0);
   const [isPending, startTransition] = useTransition();
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
+  const seriesTotalPages = Math.ceil(seriesTotal / PAGE_SIZE);
 
-  const fetchAppointments = async (pageNumber: number) => {
+  const fetchAppointments = async (
+    pageNumber: number,
+    filter: AppointmentFilter,
+  ) => {
     try {
       const { data, total } = await getAllAppointments({
         limit: PAGE_SIZE,
         offset: (pageNumber - 1) * PAGE_SIZE,
+        filter,
       });
 
       setAppointments(data);
@@ -47,13 +58,35 @@ export default function AppointmentsDashboard() {
     }
   };
 
+  const fetchAppointmentSeries = async () => {
+    try {
+      setIsSeriesLoading(true);
+      const { data, total } = await getAppointmentSeries({
+        limit: PAGE_SIZE,
+        offset: (seriesPage - 1) * PAGE_SIZE,
+      });
+      setSeries(data);
+      setSeriesTotal(total);
+    } catch (error) {
+      console.error('Error fetching appointment series:', error);
+      toast.error('No se pudieron cargar las recurrencias.');
+    } finally {
+      setIsSeriesLoading(false);
+    }
+  };
+
   const refreshAppointments = () => {
-    fetchAppointments(page);
+    fetchAppointments(page, appointmentFilter);
+    fetchAppointmentSeries();
   };
 
   useEffect(() => {
-    fetchAppointments(page);
-  }, [page]);
+    fetchAppointments(page, appointmentFilter);
+  }, [page, appointmentFilter]);
+
+  useEffect(() => {
+    fetchAppointmentSeries();
+  }, [seriesPage]);
 
   const handleDelete = (id: string) => {
     const confirmDelete = confirm(
@@ -69,6 +102,65 @@ export default function AppointmentsDashboard() {
       } catch (error) {
         console.error('Error deleting appointment:', error);
         toast.error('No se pudo eliminar la cita.');
+      }
+    });
+  };
+
+  const handleDeleteSeries = (id: string) => {
+    const confirmDelete = confirm(
+      '¿Estás seguro de que deseas eliminar esta recurrencia?',
+    );
+    if (!confirmDelete) return;
+
+    startTransition(async () => {
+      try {
+        await deleteAppointmentSeries(id);
+        setSeries((prev) => prev.filter((item) => item.id !== id));
+        await fetchAppointments(page, appointmentFilter);
+        toast.success('Recurrencia eliminada correctamente.');
+      } catch (error) {
+        console.error('Error deleting appointment series:', error);
+        toast.error('No se pudo eliminar la recurrencia.');
+      }
+    });
+  };
+
+
+  const handleUpdateSeriesSchedule = async (
+    payload: RecurringScheduleUpdatePayload,
+  ) => {
+    startTransition(async () => {
+      try {
+        const result = await updateAppointmentSeriesSchedule(payload);
+        if (!result.ok) {
+          toast.error(result.error);
+          return;
+        }
+        await fetchAppointmentSeries();
+        await fetchAppointments(page, appointmentFilter);
+        toast.success('Recurrencia actualizada correctamente.');
+      } catch (error) {
+        console.error('Error updating appointment series schedule:', error);
+        toast.error('No se pudo actualizar la recurrencia.');
+      }
+    });
+  };
+
+  const handleUpdateSingleAppointment = async (
+    payload: SingleAppointmentUpdatePayload,
+  ) => {
+    startTransition(async () => {
+      try {
+        const result = await updateSingleAppointment(payload);
+        if (!result.ok) {
+          toast.error(result.error);
+          return;
+        }
+        await fetchAppointments(page, appointmentFilter);
+        toast.success('Cita actualizada correctamente.');
+      } catch (error) {
+        console.error('Error updating appointment:', error);
+        toast.error('No se pudo actualizar la cita.');
       }
     });
   };
@@ -91,101 +183,35 @@ export default function AppointmentsDashboard() {
       <section
         aria-labelledby='appointments-table-heading'
         className='bg-card rounded-lg border p-6'>
-        <h2
-          id='appointments-table-heading'
-          className='text-xl font-semibold mb-4 sr-only'>
-          Lista de Citas Programadas
-        </h2>
+        <SingleAppointmentsTable
+          appointments={appointments}
+          page={page}
+          totalPages={totalPages}
+          isPending={isPending}
+          onDelete={handleDelete}
+          onPageChange={setPage}
+          filter={appointmentFilter}
+          onFilterChange={(value) => {
+            setAppointmentFilter(value);
+            setPage(1);
+          }}
+          onUpdate={handleUpdateSingleAppointment}
+        />
+      </section>
 
-        <Table className='min-w-[700px] table-auto'>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Correo</TableHead>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Hora</TableHead>
-              <TableHead>Servicio</TableHead>
-              <TableHead>Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {appointments.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className='text-center text-muted-foreground py-6'>
-                  No hay citas registradas.
-                </TableCell>
-              </TableRow>
-            ) : (
-              appointments.map((appointment) => (
-                <TableRow key={appointment.id}>
-                  <TableCell className='max-w-[140px] truncate'>
-                    {appointment.name}
-                  </TableCell>
-                  <TableCell className='max-w-[140px] truncate'>
-                    {appointment.email}
-                  </TableCell>
-                  <TableCell className='max-w-[140px] truncate'>
-                    {format(parseISO(appointment.date.toString()), 'PPP', {
-                      locale: es,
-                    })}
-                  </TableCell>
-                  <TableCell className='max-w-[140px] truncate'>
-                    {appointment.time}
-                  </TableCell>
-                  <TableCell className='max-w-[140px] truncate'>
-                    {appointment.service}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant='destructive'
-                      size='sm'
-                      onClick={() => handleDelete(appointment.id!)}
-                      aria-label={`Eliminar cita de ${appointment.name}`}>
-                      Eliminar
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-        {totalPages > 1 && (
-          <div
-            className='flex justify-center items-center gap-2 mt-6'
-            aria-label='Paginación de citas'>
-            <Button
-              size='sm'
-              variant='outline'
-              disabled={page === 1 || isPending}
-              onClick={() => setPage((p) => p - 1)}
-              aria-label='Página anterior'>
-              Anterior
-            </Button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <Button
-                key={p}
-                size='sm'
-                variant={p === page ? 'default' : 'outline'}
-                onClick={() => setPage(p)}
-                aria-label={`Ir a la página ${p}`}>
-                {p}
-              </Button>
-            ))}
-
-            <Button
-              size='sm'
-              variant='outline'
-              disabled={page === totalPages || isPending}
-              onClick={() => setPage((p) => p + 1)}
-              aria-label='Página siguiente'>
-              Siguiente
-            </Button>
-          </div>
-        )}
+      <section
+        aria-labelledby='recurrence-table-heading'
+        className='bg-card rounded-lg border p-6 mt-8'>
+        <RecurringAppointmentsTable
+          series={series}
+          isLoading={isSeriesLoading}
+          isPending={isPending}
+          onDelete={handleDeleteSeries}
+          onUpdateSchedule={handleUpdateSeriesSchedule}
+          page={seriesPage}
+          totalPages={seriesTotalPages}
+          onPageChange={setSeriesPage}
+        />
       </section>
     </main>
   );
