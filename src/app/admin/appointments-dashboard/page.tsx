@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -30,40 +30,59 @@ export default function AppointmentsDashboard() {
   const [page, setPage] = useState(1);
   const [appointmentFilter, setAppointmentFilter] =
     useState<AppointmentFilter>('all');
+  const [sortBy, setSortBy] = useState<
+    'name' | 'email' | 'date' | 'time' | 'service'
+  >('date');
+  const [sortDirection, setSortDirection] =
+    useState<'asc' | 'desc'>('desc');
   const [series, setSeries] = useState<AppointmentSeriesWithDays[]>([]);
   const [isSeriesLoading, setIsSeriesLoading] = useState(true);
   const [seriesPage, setSeriesPage] = useState(1);
   const [seriesTotal, setSeriesTotal] = useState(0);
+  const [seriesSortBy, setSeriesSortBy] = useState<
+    'name' | 'service' | 'start_date' | 'end_date' | 'created_at'
+  >('created_at');
+  const [seriesSortDirection, setSeriesSortDirection] =
+    useState<'asc' | 'desc'>('desc');
   const [isPending, startTransition] = useTransition();
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const seriesTotalPages = Math.ceil(seriesTotal / PAGE_SIZE);
 
-  const fetchAppointments = async (
-    pageNumber: number,
-    filter: AppointmentFilter,
-  ) => {
-    try {
-      const { data, total } = await getAllAppointments({
-        limit: PAGE_SIZE,
-        offset: (pageNumber - 1) * PAGE_SIZE,
-        filter,
-      });
+  const fetchAppointments = useCallback(
+    async (
+      pageNumber: number,
+      filter: AppointmentFilter,
+      nextSortBy: 'name' | 'email' | 'date' | 'time' | 'service',
+      nextSortDirection: 'asc' | 'desc',
+    ) => {
+      try {
+        const { data, total } = await getAllAppointments({
+          limit: PAGE_SIZE,
+          offset: (pageNumber - 1) * PAGE_SIZE,
+          filter,
+          sortBy: nextSortBy,
+          sortDirection: nextSortDirection,
+        });
 
-      setAppointments(data);
-      setTotal(total);
-    } catch (error) {
-      console.error('Error fetching appointments:', error);
-      toast.error('No se pudieron cargar las citas.');
-    }
-  };
+        setAppointments(data);
+        setTotal(total);
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
+        toast.error('No se pudieron cargar las citas.');
+      }
+    },
+    [],
+  );
 
-  const fetchAppointmentSeries = async () => {
+  const fetchAppointmentSeries = useCallback(async () => {
     try {
       setIsSeriesLoading(true);
       const { data, total } = await getAppointmentSeries({
         limit: PAGE_SIZE,
         offset: (seriesPage - 1) * PAGE_SIZE,
+        sortBy: seriesSortBy,
+        sortDirection: seriesSortDirection,
       });
       setSeries(data);
       setSeriesTotal(total);
@@ -73,20 +92,20 @@ export default function AppointmentsDashboard() {
     } finally {
       setIsSeriesLoading(false);
     }
-  };
+  }, [seriesPage, seriesSortBy, seriesSortDirection]);
 
   const refreshAppointments = () => {
-    fetchAppointments(page, appointmentFilter);
+    fetchAppointments(page, appointmentFilter, sortBy, sortDirection);
     fetchAppointmentSeries();
   };
 
   useEffect(() => {
-    fetchAppointments(page, appointmentFilter);
-  }, [page, appointmentFilter]);
+    fetchAppointments(page, appointmentFilter, sortBy, sortDirection);
+  }, [appointmentFilter, fetchAppointments, page, sortBy, sortDirection]);
 
   useEffect(() => {
     fetchAppointmentSeries();
-  }, [seriesPage]);
+  }, [fetchAppointmentSeries]);
 
   const handleDelete = (id: string) => {
     const confirmDelete = confirm(
@@ -116,7 +135,7 @@ export default function AppointmentsDashboard() {
       try {
         await deleteAppointmentSeries(id);
         setSeries((prev) => prev.filter((item) => item.id !== id));
-        await fetchAppointments(page, appointmentFilter);
+        await fetchAppointments(page, appointmentFilter, sortBy, sortDirection);
         toast.success('Recurrencia eliminada correctamente.');
       } catch (error) {
         console.error('Error deleting appointment series:', error);
@@ -137,7 +156,7 @@ export default function AppointmentsDashboard() {
           return;
         }
         await fetchAppointmentSeries();
-        await fetchAppointments(page, appointmentFilter);
+        await fetchAppointments(page, appointmentFilter, sortBy, sortDirection);
         toast.success('Recurrencia actualizada correctamente.');
       } catch (error) {
         console.error('Error updating appointment series schedule:', error);
@@ -156,7 +175,7 @@ export default function AppointmentsDashboard() {
           toast.error(result.error);
           return;
         }
-        await fetchAppointments(page, appointmentFilter);
+        await fetchAppointments(page, appointmentFilter, sortBy, sortDirection);
         toast.success('Cita actualizada correctamente.');
       } catch (error) {
         console.error('Error updating appointment:', error);
@@ -195,6 +214,19 @@ export default function AppointmentsDashboard() {
             setAppointmentFilter(value);
             setPage(1);
           }}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSortChange={(key) => {
+            setPage(1);
+            if (sortBy === key) {
+              setSortDirection((direction) =>
+                direction === 'asc' ? 'desc' : 'asc',
+              );
+              return;
+            }
+            setSortBy(key);
+            setSortDirection('asc');
+          }}
           onUpdate={handleUpdateSingleAppointment}
         />
       </section>
@@ -211,6 +243,19 @@ export default function AppointmentsDashboard() {
           page={seriesPage}
           totalPages={seriesTotalPages}
           onPageChange={setSeriesPage}
+          sortBy={seriesSortBy}
+          sortDirection={seriesSortDirection}
+          onSortChange={(key) => {
+            setSeriesPage(1);
+            if (seriesSortBy === key) {
+              setSeriesSortDirection((direction) =>
+                direction === 'asc' ? 'desc' : 'asc',
+              );
+              return;
+            }
+            setSeriesSortBy(key);
+            setSeriesSortDirection('asc');
+          }}
         />
       </section>
     </main>

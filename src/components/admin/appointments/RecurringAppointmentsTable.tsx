@@ -50,7 +50,13 @@ import {
 } from '@/components/ui/select';
 import { TIME_SLOTS } from '@/constants';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, MoreVertical, PencilIcon, Trash2 } from 'lucide-react';
+import {
+  ArrowUpDown,
+  CalendarIcon,
+  MoreVertical,
+  PencilIcon,
+  Trash2,
+} from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -71,6 +77,9 @@ interface RecurringAppointmentsTableProps {
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  sortBy: SortKey;
+  sortDirection: SortDirection;
+  onSortChange: (key: SortKey) => void;
   isPending?: boolean;
 }
 
@@ -82,6 +91,9 @@ export function RecurringAppointmentsTable({
   page,
   totalPages,
   onPageChange,
+  sortBy,
+  sortDirection,
+  onSortChange,
   isPending = false,
 }: RecurringAppointmentsTableProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -201,9 +213,24 @@ export function RecurringAppointmentsTable({
       <Table className='min-w-[700px] w-full table-fixed'>
         <TableHeader>
           <TableRow>
-            <TableHead className='w-[22%]'>Cliente</TableHead>
-            <TableHead className='w-[18%]'>Servicio</TableHead>
-            <TableHead className='w-[20%]'>Rango</TableHead>
+            <TableHead
+              className='w-[22%]'
+              aria-sort={getAriaSort(sortBy, sortDirection, 'name')}>
+              <SortButton label='Cliente' onClick={() => onSortChange('name')} />
+            </TableHead>
+            <TableHead
+              className='w-[18%]'
+              aria-sort={getAriaSort(sortBy, sortDirection, 'service')}>
+              <SortButton
+                label='Servicio'
+                onClick={() => onSortChange('service')}
+              />
+            </TableHead>
+            <TableHead
+              className='w-[20%]'
+              aria-sort={getAriaSort(sortBy, sortDirection, 'start_date')}>
+              <SortButton label='Rango' onClick={() => onSortChange('start_date')} />
+            </TableHead>
             <TableHead className='w-[28%]'>Días y horas</TableHead>
             <TableHead className='w-[8%] text-right'>Acciones</TableHead>
           </TableRow>
@@ -559,6 +586,40 @@ export function RecurringAppointmentsTable({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+type SortKey = 'name' | 'service' | 'start_date' | 'end_date' | 'created_at';
+type SortDirection = 'asc' | 'desc';
+
+function getAriaSort(
+  activeKey: SortKey,
+  direction: SortDirection,
+  key: SortKey,
+) {
+  if (activeKey !== key) {
+    return 'none';
+  }
+  return direction === 'asc' ? 'ascending' : 'descending';
+}
+
+function SortButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type='button'
+      variant='ghost'
+      size='sm'
+      onClick={onClick}
+      className='h-8 px-2 text-muted-foreground hover:text-foreground'>
+      <span className='text-xs font-medium'>{label}</span>
+      <ArrowUpDown className='ml-1 h-3.5 w-3.5' />
+    </Button>
   );
 }
 

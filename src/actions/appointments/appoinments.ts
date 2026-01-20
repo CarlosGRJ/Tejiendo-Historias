@@ -364,17 +364,21 @@ export async function getAllAppointments({
   limit = 10,
   offset = 0,
   filter = 'all',
+  sortBy = 'date',
+  sortDirection = 'desc',
 }: {
   limit?: number;
   offset?: number;
   filter?: AppointmentFilter;
+  sortBy?: 'name' | 'email' | 'date' | 'time' | 'service';
+  sortDirection?: 'asc' | 'desc';
 } = {}): Promise<{ data: Appointment[]; total: number }> {
   const supabase = await createClient();
 
   let query = supabase
     .from('appointments')
     .select('*', { count: 'exact' }) // Enable counting total rows
-    .order('date', { ascending: false });
+    .order(sortBy, { ascending: sortDirection === 'asc' });
 
   if (filter === 'single') {
     query = query.is('series_id', null);
@@ -472,9 +476,13 @@ export async function deleteAppointment(id: string) {
 export async function getAppointmentSeries({
   limit = 10,
   offset = 0,
+  sortBy = 'created_at',
+  sortDirection = 'desc',
 }: {
   limit?: number;
   offset?: number;
+  sortBy?: 'name' | 'service' | 'start_date' | 'end_date' | 'created_at';
+  sortDirection?: 'asc' | 'desc';
 } = {}): Promise<{ data: AppointmentSeriesWithDays[]; total: number }> {
   const supabase = await createClient();
 
@@ -484,7 +492,7 @@ export async function getAppointmentSeries({
       'id, name, email, phone, service, message, start_date, end_date, is_active, created_at, appointment_series_days(id, series_id, day_of_week, time)',
       { count: 'exact' },
     )
-    .order('created_at', { ascending: false })
+    .order(sortBy, { ascending: sortDirection === 'asc' })
     .range(offset, offset + limit - 1);
 
   if (error) {

@@ -46,7 +46,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon, MoreVertical, PencilIcon, Trash2 } from 'lucide-react';
+import {
+  ArrowUpDown,
+  CalendarIcon,
+  MoreVertical,
+  PencilIcon,
+  Trash2,
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -73,6 +79,9 @@ interface SingleAppointmentsTableProps {
   onPageChange: (page: number) => void;
   filter: AppointmentFilter;
   onFilterChange: (value: AppointmentFilter) => void;
+  sortBy: SortKey;
+  sortDirection: SortDirection;
+  onSortChange: (key: SortKey) => void;
   onUpdate: (payload: SingleAppointmentUpdatePayload) => Promise<void>;
 }
 
@@ -85,6 +94,9 @@ export function SingleAppointmentsTable({
   onPageChange,
   filter,
   onFilterChange,
+  sortBy,
+  sortDirection,
+  onSortChange,
   onUpdate,
 }: SingleAppointmentsTableProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -211,11 +223,24 @@ export function SingleAppointmentsTable({
       <Table className='min-w-[700px] table-auto'>
         <TableHeader>
           <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Correo</TableHead>
-            <TableHead>Fecha</TableHead>
-            <TableHead>Hora</TableHead>
-            <TableHead>Servicio</TableHead>
+            <TableHead aria-sort={getAriaSort(sortBy, sortDirection, 'name')}>
+              <SortButton label='Nombre' onClick={() => onSortChange('name')} />
+            </TableHead>
+            <TableHead aria-sort={getAriaSort(sortBy, sortDirection, 'email')}>
+              <SortButton label='Correo' onClick={() => onSortChange('email')} />
+            </TableHead>
+            <TableHead aria-sort={getAriaSort(sortBy, sortDirection, 'date')}>
+              <SortButton label='Fecha' onClick={() => onSortChange('date')} />
+            </TableHead>
+            <TableHead aria-sort={getAriaSort(sortBy, sortDirection, 'time')}>
+              <SortButton label='Hora' onClick={() => onSortChange('time')} />
+            </TableHead>
+            <TableHead aria-sort={getAriaSort(sortBy, sortDirection, 'service')}>
+              <SortButton
+                label='Servicio'
+                onClick={() => onSortChange('service')}
+              />
+            </TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -525,6 +550,40 @@ export function SingleAppointmentsTable({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+type SortKey = 'name' | 'email' | 'date' | 'time' | 'service';
+type SortDirection = 'asc' | 'desc';
+
+function getAriaSort(
+  activeKey: SortKey,
+  direction: SortDirection,
+  key: SortKey,
+) {
+  if (activeKey !== key) {
+    return 'none';
+  }
+  return direction === 'asc' ? 'ascending' : 'descending';
+}
+
+function SortButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type='button'
+      variant='ghost'
+      size='sm'
+      onClick={onClick}
+      className='h-8 px-2 text-muted-foreground hover:text-foreground'>
+      <span className='text-xs font-medium'>{label}</span>
+      <ArrowUpDown className='ml-1 h-3.5 w-3.5' />
+    </Button>
   );
 }
 
