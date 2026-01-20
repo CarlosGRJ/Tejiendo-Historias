@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { z } from 'zod';
@@ -99,6 +99,9 @@ export function RecurringAppointmentsTable({
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [activeSeries, setActiveSeries] =
     useState<AppointmentSeriesWithDays | null>(null);
+  const recurrenceTimeCache = useRef<Partial<Record<RecurrenceDay, string>>>(
+    {},
+  );
 
   const recurrenceDayLabels = useMemo(() => {
     return Object.fromEntries(
@@ -189,6 +192,9 @@ export function RecurringAppointmentsTable({
   const onSubmit = async (data: ScheduleFormValues) => {
     if (!activeSeries) return;
     if (!data.startDate || !data.endDate) {
+      return;
+    }
+    if (!form.formState.isDirty) {
       return;
     }
 
@@ -490,6 +496,8 @@ export function RecurringAppointmentsTable({
                                     const currentTimes =
                                       form.getValues('recurrenceTimes') ?? {};
                                     if (day.value in currentTimes) {
+                                      recurrenceTimeCache.current[day.value] =
+                                        currentTimes[day.value] ?? '';
                                       const rest = Object.fromEntries(
                                         Object.entries(currentTimes).filter(
                                           ([key]) => key !== day.value,
@@ -504,6 +512,18 @@ export function RecurringAppointmentsTable({
                                     }
                                     field.onChange(nextDays);
                                   } else {
+                                    const cached =
+                                      recurrenceTimeCache.current[day.value];
+                                    if (cached) {
+                                      form.setValue(
+                                        `recurrenceTimes.${day.value}` as const,
+                                        cached,
+                                        { shouldValidate: true },
+                                      );
+                                      form.clearErrors(
+                                        `recurrenceTimes.${day.value}`,
+                                      );
+                                    }
                                     field.onChange([...field.value, day.value]);
                                   }
                                 }}
@@ -542,7 +562,7 @@ export function RecurringAppointmentsTable({
                               form.setValue(
                                 `recurrenceTimes.${day}` as const,
                                 value,
-                                { shouldValidate: true },
+                                { shouldValidate: true, shouldDirty: true },
                               );
                               form.clearErrors(`recurrenceTimes.${day}`);
                             }}>
@@ -577,7 +597,10 @@ export function RecurringAppointmentsTable({
                   className='flex-1'>
                   Cancelar
                 </Button>
-                <Button type='submit' disabled={isPending} className='flex-1'>
+                <Button
+                  type='submit'
+                  disabled={isPending || !form.formState.isDirty}
+                  className='flex-1'>
                   Guardar cambios
                 </Button>
               </div>

@@ -163,6 +163,9 @@ export function SingleAppointmentsTable({
 
   const onSubmit = async (data: SingleAppointmentFormValues) => {
     if (!activeAppointment) return;
+    if (!form.formState.isDirty) {
+      return;
+    }
 
     await onUpdate({
       id: activeAppointment.id,
@@ -541,7 +544,10 @@ export function SingleAppointmentsTable({
                   className='flex-1'>
                   Cancelar
                 </Button>
-                <Button type='submit' disabled={isPending} className='flex-1'>
+                <Button
+                  type='submit'
+                  disabled={isPending || !form.formState.isDirty}
+                  className='flex-1'>
                   Guardar cambios
                 </Button>
               </div>
