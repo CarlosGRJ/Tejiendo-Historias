@@ -323,7 +323,7 @@ export function RecurringAppointmentsTable({
 
       {totalPages > 1 && (
         <div
-          className='flex justify-center items-center gap-2 mt-6'
+          className='flex flex-wrap justify-center items-center gap-2 mt-6'
           aria-label='Paginación de recurrencias'>
           <Button
             size='sm'
@@ -334,16 +334,25 @@ export function RecurringAppointmentsTable({
             Anterior
           </Button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <Button
-              key={p}
-              size='sm'
-              variant={p === page ? 'default' : 'outline'}
-              onClick={() => onPageChange(p)}
-              aria-label={`Ir a la página ${p}`}>
-              {p}
-            </Button>
-          ))}
+          {getPaginationRange(page, totalPages).map((item, index) =>
+            item === 'ellipsis' ? (
+              <span
+                key={`ellipsis-${index}`}
+                className='px-2 text-muted-foreground'>
+                …
+              </span>
+            ) : (
+              <Button
+                key={`page-${item}`}
+                size='sm'
+                variant={item === page ? 'default' : 'outline'}
+                onClick={() => onPageChange(item)}
+                aria-label={`Ir a la página ${item}`}
+                aria-current={item === page ? 'page' : undefined}>
+                {item}
+              </Button>
+            ),
+          )}
 
           <Button
             size='sm'
@@ -610,6 +619,35 @@ export function RecurringAppointmentsTable({
       </Dialog>
     </>
   );
+}
+
+function getPaginationRange(
+  currentPage: number,
+  totalPages: number,
+): Array<number | 'ellipsis'> {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const pages: Array<number | 'ellipsis'> = [1];
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  if (start > 2) {
+    pages.push('ellipsis');
+  }
+
+  for (let page = start; page <= end; page += 1) {
+    pages.push(page);
+  }
+
+  if (end < totalPages - 1) {
+    pages.push('ellipsis');
+  }
+
+  pages.push(totalPages);
+
+  return pages;
 }
 
 type SortKey = 'name' | 'service' | 'start_date' | 'end_date' | 'created_at';

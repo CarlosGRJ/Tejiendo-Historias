@@ -6,6 +6,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { getPaginatedPosts } from '@/actions/blog/posts';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Post } from '@/types/blog';
 import {
@@ -167,22 +172,28 @@ export default function Blog() {
                   )}
                 </div>
 
-                <div className='flex flex-col h-64 justify-between p-6 bg-card text-card-foreground'>
-                  <div className='space-y-2'>
+                <div className='flex flex-col h-64 p-6 bg-card text-card-foreground'>
+                  <div className='space-y-2 flex-1'>
                     <span className='text-sm font-medium text-primary'>
                       {post.category}
                     </span>
-                    <h3
-                      id={`post-title-${post.id}`}
-                      className='text-xl font-semibold leading-snug'>
-                      {post.title}
-                    </h3>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <h3
+                          id={`post-title-${post.id}`}
+                          className='text-xl font-semibold leading-snug line-clamp-2'
+                          title={post.title}>
+                          {post.title}
+                        </h3>
+                      </TooltipTrigger>
+                      <TooltipContent>{post.title}</TooltipContent>
+                    </Tooltip>
                     <p className='text-sm text-muted-foreground line-clamp-3'>
                       {post.summary}
                     </p>
                   </div>
 
-                  <div className='mt-6 flex items-center justify-between'>
+                  <div className='mt-auto flex items-center justify-between'>
                     <time
                       dateTime={post.created_at}
                       className='text-sm text-muted-foreground'>
